@@ -8,7 +8,7 @@
 //psyllid includes
 #include "batch_executor.hh"
 #include "daq_control.hh"
-#include "psyllid_constants.hh"
+#include "sandfly_constants.hh"
 #include "request_receiver.hh"
 
 //non-psyllid P8 includes
