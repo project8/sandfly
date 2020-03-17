@@ -1,0 +1,29 @@
+language: cpp
+
+dist: xenial
+
+services:
+  - docker
+
+env:
+  - DOCKER_CLI_EXPERIMENTAL=enabled
+
+branches:
+  only:
+    - develop
+    - master
+    - /^v\d+\.\d+\.\d+(-S*)?$/
+    ## build any branch with a name ending in `/build` (not including the backticks)
+    - /^.*\/build$/
+
+matrix:
+  include:
+    - env: BASE_USER=project8 BASE_REPO=p8compute_dependencies BASE_TAG=v0.9.0 PRODUCT_SUFFIX=p8compute PSYLLID_PREFIX_TAG=v1.12.2 PSYLLID_BASE_PREFIX=/usr/local/p8/psyllid
+    - env: BASE_USER=amd64 BASE_REPO=debian BASE_TAG=9 PRODUCT_SUFFIX=debian PSYLLID_PREFIX_TAG="" PSYLLID_BASE_PREFIX=/usr/local
+
+script:
+    #- set -e
+    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+    - docker pull ${BASE_USER}/${BASE_REPO}:${BASE_TAG}
+    - docker build --build-arg IMG_USER=${BASE_USER} --build-arg IMG_REPO=${BASE_REPO} --build-arg IMG_TAG=$BASE_TAG --build-arg PSYLLID_BASE_PREFIX=$PSYLLID_BASE_PREFIX --build-arg PSYLLID_PREFIX_TAG=$PSYLLID_PREFIX_TAG -t project8/psyllid:`echo $TRAVIS_BRANCH | tr / _`-${PRODUCT_SUFFIX} .
+    - docker push project8/psyllid:`echo $TRAVIS_BRANCH | tr / _`-${PRODUCT_SUFFIX}
