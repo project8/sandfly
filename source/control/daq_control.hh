@@ -10,7 +10,7 @@
 
 #include "control_access.hh"
 #include "stream_manager.hh" // for midge_package
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 #include "cancelable.hh"
 #include "member_variables.hh"

@@ -35,14 +35,14 @@ set( sources
 )
 
 set( dependencies
-    PsyllidUtility
+    SandflyUtility
 )
 
 ###########
 # library #
 ###########
 
-midge_library( PsyllidControl sources dependencies )
+midge_library( SandflyControl sources dependencies )
 pbuilder_install_headers( ${headers} )
 
 

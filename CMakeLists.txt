@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.1)
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Psyllid VERSION 1.12.3 )
+project( Sandfly VERSION 1.0.0 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/midge/scarab/cmake )
 include( PackageBuilder )
@@ -71,5 +71,5 @@ include_directories( BEFORE
 add_subdirectory( source/utility )
 add_subdirectory( source/control )
 
-add_subdirectory( source/applications )
-add_subdirectory( source/test )
+#add_subdirectory( source/applications )
+#add_subdirectory( source/test )
