@@ -6,28 +6,20 @@ namespace sandfly
 {
 
     error::error() :
-            exception(),
-            f_message( "" )
+            base_exception()
     {
     }
     error::error( const error& p_copy ) :
-            exception( p_copy ),
-            f_message( p_copy.f_message )
+            base_exception( p_copy )
     {
     }
     error& error::operator=( const error& p_copy )
     {
-        exception::operator=( p_copy );
-        f_message = p_copy.f_message;
+        base_exception::operator=( p_copy );
         return *this;
     }
-    error::~error() throw()
+    error::~error() noexcept
     {
-    }
-
-    const char* error::what() const throw()
-    {
-        return f_message.c_str();
     }
 
 } /* namespace sandfly */

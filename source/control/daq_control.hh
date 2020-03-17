@@ -63,14 +63,14 @@ namespace sandfly
             class run_error : public error
             {
                 public:
-                    run_error() {}
-                    virtual ~run_error() {}
+                    run_error() = default;
+                    virtual ~run_error() = default;
             };
             class status_error : public error
             {
                 public:
-                    status_error() {}
-                    virtual ~status_error() {}
+                    status_error() = default;
+                    virtual ~status_error() = default;
             };
 
         public:
