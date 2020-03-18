@@ -269,7 +269,7 @@ namespace sandfly
 
             header_wrapper& operator=( header_wrapper&& a_orig );
 
-            /// Get a reference to the M3Header; Will throw psyllid::error if the header object is not valid.
+            /// Get a reference to the M3Header; Will throw sandfly::error if the header object is not valid.
             monarch3::M3Header& header();
 
             /// Get M3Header pointer

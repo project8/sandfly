@@ -107,7 +107,7 @@ namespace sandfly
     };
 
 #define REGISTER_PRESET( preset_class, preset_type ) \
-        static ::scarab::registrar< ::psyllid::stream_preset, preset_class, const std::string& > s_stream_preset_##preset_class##_registrar( preset_type );
+        static ::scarab::registrar< ::sandfly::stream_preset, preset_class, const std::string& > s_stream_preset_##preset_class##_registrar( preset_type );
 
 
 #endif /* CONTROL_STREAM_PRESET_HH_ */

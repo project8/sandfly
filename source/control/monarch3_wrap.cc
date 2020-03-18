@@ -8,8 +8,8 @@
 #include "butterfly_house.hh"
 #include "monarch3_wrap.hh"
 
-#include "psyllid_constants.hh"
-#include "psyllid_error.hh"
+#include "sandfly_constants.hh"
+#include "sandfly_error.hh"
 
 #include "M3Exception.hh"
 

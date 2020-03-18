@@ -1,8 +1,8 @@
 /*
- * psyllid_version.hh
+ * sandfly_version.hh
  *
  *  Created on: Mar 20, 2013
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
 #ifndef SANDFLY_VERSION_HH_

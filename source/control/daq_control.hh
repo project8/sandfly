@@ -30,7 +30,7 @@ namespace sandfly
      @class daq_control
      @author N. S. Oblath
 
-     @brief Controls psyllid's status and forwards requests to the DAQ nodes.
+     @brief Controls Sandfly's status and forwards requests to the DAQ nodes.
 
      @details
      Handles all requests received via request_receiver that don't affect the stream setup directly.
@@ -43,8 +43,8 @@ namespace sandfly
      - Deactivating: an instruction to deactivate has been received, and the DAQ control is in the process of stopping things.
      - Canceled: the DAQ control has received an instruction from on high to exit immediately, and is in the process of doing so.
      - Do Restart: Midge experienced a non-fatal error.  The DAQ should be restarted and things will be fine.
-     - Done: the DAQ control has completed operation and is ready for Psyllid to exit.
-     - Error: something went wrong; Psyllid should be restarted.
+     - Done: the DAQ control has completed operation and is ready for Sandfly to exit.
+     - Error: something went wrong; Sandfly should be restarted.
 
      Startup readiness: whether the DAQ control is ready for use after startup depends on whether
      it was told to activate on startup or not:
@@ -63,14 +63,14 @@ namespace sandfly
             class run_error : public error
             {
                 public:
-                    run_error() {}
-                    virtual ~run_error() {}
+                    run_error() = default;
+                    virtual ~run_error() = default;
             };
             class status_error : public error
             {
                 public:
-                    status_error() {}
-                    virtual ~status_error() {}
+                    status_error() = default;
+                    virtual ~status_error() = default;
             };
 
         public:
@@ -85,28 +85,28 @@ namespace sandfly
 
             /// Start the DAQ into the activated state
             /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw psyllid::error; daq_control will NOT be usable
+            /// Can throw sandfly::error; daq_control will NOT be usable
             void activate();
             /// Restarts the DAQ into the activated state
             /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw psyllid::error; daq_control will NOT be usable
+            /// Can throw sandfly::error; daq_control will NOT be usable
             void reactivate();
             /// Returns the DAQ to the deactivated state
             /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw psyllid::error; daq_control will NOT be usable
+            /// Can throw sandfly::error; daq_control will NOT be usable
             void deactivate();
 
             bool is_ready_at_startup() const;
 
             /// Start a run
             /// Can throw daq_control::run_error or status_error; daq_control will still be usable
-            /// Can throw psyllid::error; daq_control will NOT be usable
+            /// Can throw sandfly::error; daq_control will NOT be usable
             /// Stop run with stop_run()
             void start_run();
 
             /// Stop a run
             /// Can throw daq_control::run_error or status_error; daq_control will still be usable
-            /// Can throw psyllid::error; daq_control will NOT be usable
+            /// Can throw sandfly::error; daq_control will NOT be usable
             void stop_run();
 
         public:
@@ -114,7 +114,7 @@ namespace sandfly
             void dump_config( const std::string& a_node_name, scarab::param_node& a_config );
 
             /// Instruct a node to run a command
-            /// Throws psyllid::error if the command fails; returns false if the command is not recognized
+            /// Throws sandfly::error if the command fails; returns false if the command is not recognized
             bool run_command( const std::string& a_node_name, const std::string& a_cmd, const scarab::param_node& a_args );
 
         public:

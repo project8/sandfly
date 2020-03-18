@@ -29,8 +29,8 @@ namespace sandfly
      - duration
      - max-file-size-mb
 
-     These default configurations, together with the configurations from the command line and the config-file, are passed to scarab::configurator by the psyllid executable.
-     The configurator combines them and extracts the final psyllid configuration which is then passed to the run_server during initialization.
+     These default configurations, together with the configurations from the command line and the config-file, are passed to scarab::configurator by the sandfly executable.
+     The configurator combines them and extracts the final sandfly configuration which is then passed to the run_server during initialization.
      */
     class server_config : public scarab::param_node
     {

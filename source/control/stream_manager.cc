@@ -8,7 +8,7 @@
 #include "stream_manager.hh"
 
 #include "node_builder.hh"
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 #include "stream_preset.hh"
 
 #include "node.hh"

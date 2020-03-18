@@ -38,7 +38,7 @@ namespace sandfly
      @brief Sets up daq_control, strea_manager and request_receiver. Registers request handles.
 
      @details
-     A run_server instance is created by the psyllid executable. The executable calls run_server.execute() and waits for it's return.
+     A run_server instance is created by the DAQ executable. The executable calls run_server.execute() and waits for it's return.
      In execute(), run_server creates new instances of daq_control, stream_manager and request_receiver.
      It also adds set, get and cmd request handlers by registering handlers with the request_receiver.
      Then it calls daq_control.execute and request_receiver.execute in 2 separate threads.

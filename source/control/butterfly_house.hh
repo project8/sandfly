@@ -50,7 +50,7 @@ namespace sandfly
      @details
      Holds one monarch pointer per file.
      Registers the writer and creates, prepares, starts and finishes egg files via monarch3_wrapper.
-     butterfly_house gets the file size from the psyllid config file and the filename, run duration and description from daq_control.
+     butterfly_house gets the file size from the config file and the filename, run duration and description from daq_control.
      It adds this information to the file header.
      */
     class butterfly_house : public scarab::singleton< butterfly_house >, public control_access

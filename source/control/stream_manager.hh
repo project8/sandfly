@@ -30,7 +30,7 @@ namespace sandfly
 
      @details
      Holds pointer to midge object that is running all nodes.
-     With initialization, stream_manager is given the node configurations set for the currently running psyllid instance.
+     With initialization, stream_manager is given the node configurations set for the currently running sandfly instance.
      A stream is added for every configured set of midge nodes.
      For every node in a node config an instance of the nodes builder class is created.
      daq_control activate-daq calls reset_midge in stream_manager.
@@ -81,7 +81,7 @@ namespace sandfly
             bool dump_node_config( const std::string& a_stream_name, const std::string& a_node_name, scarab::param_node& a_config ) const;
 
         public:
-            void reset_midge(); // throws psyllid::error in the event of an error configuring midge
+            void reset_midge(); // throws sandfly::error in the event of an error configuring midge
             bool must_reset_midge() const;
 
             midge_package get_midge();
