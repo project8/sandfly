@@ -7,7 +7,7 @@
 
 #include "server_config.hh"
 #include "logger.hh"
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 //scarab
 #include "path.hh"
@@ -31,7 +31,7 @@ namespace sandfly
 
         param_node t_amqp_node = param_node();
         t_amqp_node.add( "broker", "localhost" );
-        t_amqp_node.add( "queue", "psyllid" );
+        t_amqp_node.add( "queue", "sandfly" );
         t_amqp_node.add( "slack-queue", "slack_interface" );
         //add logic for default auth file if it exists
         scarab::path t_auth_default_path = scarab::expand_path( "~/.project8_authentications.json" );

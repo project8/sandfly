@@ -5,15 +5,15 @@
  *     Author: laroque
  */
 
-//psyllid includes
+//sandfly includes
 #include "batch_executor.hh"
 #include "daq_control.hh"
 #include "sandfly_constants.hh"
 #include "request_receiver.hh"
 
-//non-psyllid P8 includes
+//non-sandfly P8 includes
 #include "dripline_constants.hh"
-#include "dripline_error.hh"
+#include "dripline_exceptions.hh"
 
 #include "logger.hh"
 #include "signal_handler.hh"
@@ -131,7 +131,7 @@ namespace sandfly
         }
         catch( dripline::dripline_error& e )
         {
-            return a_request->reply( dripline::dl_daq_error(), std::string("Error processing command: ") + e.what() );
+            return a_request->reply( dl_daq_error(), std::string("Error processing command: ") + e.what() );
         }
         return a_request->reply( dripline::dl_success(), "" );
     }
@@ -146,7 +146,7 @@ namespace sandfly
         }
         catch( dripline::dripline_error& e )
         {
-            return a_request->reply( dripline::dl_daq_error(), std::string("Error processing command: ") + e.what() );
+            return a_request->reply( dl_daq_error(), std::string("Error processing command: ") + e.what() );
         }
         return a_request->reply( dripline::dl_success(), "" );
     }
@@ -199,7 +199,7 @@ namespace sandfly
         if ( ! t_request_reply )
         {
             LWARN( plog, "failed submitting action request" );
-            throw psyllid::error() << "error while submitting command";
+            throw error() << "error while submitting command";
         }
         // wait until daq status is no longer "running"
         if ( t_action.f_is_custom_action )
@@ -219,9 +219,9 @@ namespace sandfly
         if ( t_request_reply->get_return_code() >= 100 )
         {
             LWARN( plog, "batch action received an error-level return code; exiting" );
-            throw psyllid::error() << "error completing batch action, received code [" <<
+            throw error() << "error completing batch action, received code [" <<
                                    t_request_reply->get_return_code() << "]: \"" <<
-                                   t_request_reply->return_msg() << "\"";
+                                   t_request_reply->return_message() << "\"";
         }
     }
 
@@ -233,7 +233,7 @@ namespace sandfly
         if ( ! a_action["payload"].is_node() )
         {
             LERROR( plog, "payload must be a param_node" );
-            throw psyllid::error() << "batch action payload must be a node";
+            throw error() << "batch action payload must be a node";
         }
         try
         {

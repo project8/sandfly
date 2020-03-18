@@ -10,7 +10,6 @@ set( headers
     egg_writer.hh
     monarch3_wrap.hh
     node_builder.hh
-    persistent_store.hh
     request_receiver.hh
     run_server.hh
     server_config.hh
@@ -26,7 +25,6 @@ set( sources
     egg_writer.cc
     monarch3_wrap.cc
     node_builder.cc
-    persistent_store.cc
     request_receiver.cc
     run_server.cc
     server_config.cc

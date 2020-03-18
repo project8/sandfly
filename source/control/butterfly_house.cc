@@ -14,7 +14,7 @@
 #include "param.hh"
 #include "time.hh"
 
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 namespace sandfly
 {
@@ -59,7 +59,7 @@ namespace sandfly
             // creating default filenames; these can be changed when the run is started
             std::stringstream t_filename_sstr;
             unsigned t_file_num = fi_it - f_file_infos.begin();
-            t_filename_sstr << "psyllid_out_" << t_file_num << ".egg";
+            t_filename_sstr << "sandfly_out_" << t_file_num << ".egg";
             fi_it->f_filename = t_filename_sstr.str();
             fi_it->f_description = "";
             LPROG( plog, "Prepared file <" << t_file_num << ">; default filename is <" << fi_it->f_filename << ">" );

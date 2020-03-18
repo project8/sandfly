@@ -11,6 +11,7 @@ set( headers
 )
 set( sources
     message_relayer.cc
+    sandfly_constants.cc
     sandfly_error.cc
 )
 
@@ -25,6 +26,6 @@ set( sources
 # library #
 ###########
 
-midge_library( SandlfyUtility sources dependencies )
+midge_library( SandflyUtility sources dependencies )
 pbuilder_install_headers( ${headers} )
 

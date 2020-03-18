@@ -8,7 +8,7 @@
 #ifndef SANDFLY_PERSISTENT_STORE_HH_
 #define SANDFLY_PERSISTENT_STORE_HH_
 
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 #include <map>
 #include <memory>

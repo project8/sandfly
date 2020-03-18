@@ -7,7 +7,7 @@
 
 #include "stream_preset.hh"
 
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 #include "logger.hh"
 #include "param.hh"

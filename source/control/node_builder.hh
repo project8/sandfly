@@ -8,7 +8,7 @@
 #ifndef SANDFLY_NODE_BUILDER_HH_
 #define SANDFLY_NODE_BUILDER_HH_
 
-#include "psyllid_error.hh"
+#include "sandfly_error.hh"
 
 #include "member_variables.hh"
 #include "param.hh"
@@ -47,14 +47,14 @@ namespace sandfly
 
         public:
             /// Applies the builder's configuration information to the given node
-            /// Throws psyllid::error if the node is of the wrong type or if applying the configuration fails
+            /// Throws sandfly::error if the node is of the wrong type or if applying the configuration fails
             virtual void apply_config( midge::node* a_node, const scarab::param_node& a_config ) const = 0;
             /// Dumps the configuration from the given node and returns it to the caller; does not affect the builder's configuration information
-            /// Throws psyllid::error if the node is the wrong type or if the extraction fails
+            /// Throws sandfly::error if the node is the wrong type or if the extraction fails
             virtual void dump_config( const midge::node* a_node, scarab::param_node& a_config ) const = 0;
 
             /// Calls a command on the given node
-            /// Throws psyllid::error if the command fails, and returns false if the command is unrecognized
+            /// Throws sandfly::error if the command fails, and returns false if the command is unrecognized
             virtual bool run_command( midge::node* a_node, const std::string& a_cmd, const scarab::param_node& a_args ) const = 0;
 
     };
@@ -210,7 +210,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            throw psyllid::error() << e.what();
+            throw error() << e.what();
         }
         return;
     }
@@ -229,7 +229,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            throw psyllid::error() << e.what();
+            throw error() << e.what();
         }
         return;
     }
@@ -360,7 +360,7 @@ namespace sandfly
 
 #define REGISTER_NODE_AND_BUILDER( node_class, node_name, node_binding ) \
     static ::scarab::registrar< ::midge::node, node_class > s_node_##node_class##_registrar( node_name ); \
-    static ::scarab::registrar< ::psyllid::node_builder, _node_builder< node_class, node_binding > > s_node_builder_##node_class##_registrar( node_name );
+    static ::scarab::registrar< ::sandfly::node_builder, _node_builder< node_class, node_binding > > s_node_builder_##node_class##_registrar( node_name );
 
 
 } /* namespace sandfly */
