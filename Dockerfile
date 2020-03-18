@@ -53,7 +53,6 @@ WORKDIR /
 FROM sandfly_common as sandfly_done
 
 COPY dripline-cpp /tmp_source/dripline-cpp
-COPY external /tmp_source/external
 COPY midge /tmp_source/midge
 COPY monarch /tmp_source/monarch
 COPY source /tmp_source/source
