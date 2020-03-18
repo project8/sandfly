@@ -1,7 +1,7 @@
-Psyllid
+Sandfly
 =======
 
-DAQ software for the Project 8 experiment.
+DAQ software framework
 
 Documentation can be found at https://psyllid.readthedocs.io.
 

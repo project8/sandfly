@@ -9,7 +9,7 @@
 
 //#include "logger.hh"
 
-//#include "psyllid_error.hh"
+//#include "sandfly_error.hh"
 
 namespace sandfly
 {

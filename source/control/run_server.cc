@@ -7,7 +7,7 @@
 
 #include "run_server.hh"
 
-#include "psyllid_constants.hh"
+#include "sandfly_constants.hh"
 #include "daq_control.hh"
 #include "message_relayer.hh"
 #include "request_receiver.hh"
@@ -70,7 +70,7 @@ namespace sandfly
                 {
                     LDEBUG( plog, "Starting message relayer thread" );
                     t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, t_msg_relay );
-                    t_msg_relay->slack_notice( "Psyllid is starting up" );
+                    t_msg_relay->slack_notice( "Sandfly is starting up" );
                 }
             }
             catch(...)
@@ -112,7 +112,7 @@ namespace sandfly
             return;
         }
 
-        // tie the various request handlers of psyllid to the request receiver
+        // tie the various request handlers of Sandfly to the request receiver
 
         using namespace std::placeholders;
 
@@ -148,7 +148,7 @@ namespace sandfly
         f_request_receiver->register_cmd_handler( "activate-daq", std::bind( &daq_control::handle_activate_daq_control, f_daq_control, _1 ) );
         f_request_receiver->register_cmd_handler( "reactivate-daq", std::bind( &daq_control::handle_reactivate_daq_control, f_daq_control, _1 ) );
         f_request_receiver->register_cmd_handler( "deactivate-daq", std::bind( &daq_control::handle_deactivate_daq_control, f_daq_control, _1 ) );
-        f_request_receiver->register_cmd_handler( "quit-psyllid", std::bind( &run_server::handle_quit_server_request, this, _1 ) );
+        f_request_receiver->register_cmd_handler( "quit", std::bind( &run_server::handle_quit_server_request, this, _1 ) );
 
         std::condition_variable t_daq_control_ready_cv;
         std::mutex t_daq_control_ready_mutex;
@@ -205,7 +205,7 @@ namespace sandfly
     {
         LDEBUG( plog, "Canceling run server with code <" << a_code << ">" );
         f_return = a_code;
-        message_relayer::get_instance()->slack_notice( "Psyllid is shutting down" );
+        message_relayer::get_instance()->slack_notice( "Sandfly is shutting down" );
         f_batch_executor->cancel( a_code );
         f_request_receiver->cancel( a_code );
         f_daq_control->cancel( a_code );
