@@ -13,7 +13,8 @@ namespace sandfly
 {
 
     message_relayer::message_relayer( const scarab::param_node& a_config ) :
-            dripline::relayer( a_config )
+            dripline::relayer( a_config ),
+            f_queue_name( a_config.get_value( "queue", "sandfly" ) )
     {
     }
 
@@ -26,7 +27,7 @@ namespace sandfly
         scarab::param_ptr_t t_msg_ptr( new scarab::param_node() );
         scarab::param_node& t_msg = t_msg_ptr->as_node();
         t_msg.add( "message", scarab::param_value( a_msg_text ) );
-        dripline::relayer::send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.notice.sandfly" ) );
+        dripline::relayer::send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.notice." + f_queue_name ) );
         return;
     }
 
@@ -35,7 +36,7 @@ namespace sandfly
         scarab::param_ptr_t t_msg_ptr( new scarab::param_node() );
         scarab::param_node& t_msg = t_msg_ptr->as_node();
         t_msg.add( "message", scarab::param_value( a_msg_text ) );
-        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.warning.sandfly" ) );
+        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.warning." + f_queue_name ) );
         return;
     }
 
@@ -44,7 +45,7 @@ namespace sandfly
         scarab::param_ptr_t t_msg_ptr( new scarab::param_node() );
         scarab::param_node& t_msg = t_msg_ptr->as_node();
         t_msg.add( "message", scarab::param_value( a_msg_text ) );
-        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.error.sandfly" ) );
+        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.error." + f_queue_name ) );
         return;
     }
 
@@ -53,7 +54,7 @@ namespace sandfly
         scarab::param_ptr_t t_msg_ptr( new scarab::param_node() );
         scarab::param_node& t_msg = t_msg_ptr->as_node();
         t_msg.add( "message", scarab::param_value( a_msg_text ) );
-        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.critical.sandfly" ) );
+        send_async( dripline::msg_alert::create( std::move(t_msg_ptr), "status_message.critical." + f_queue_name ) );
         return;
     }
 

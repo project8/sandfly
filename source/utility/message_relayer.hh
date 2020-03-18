@@ -31,6 +31,8 @@ namespace sandfly
             void slack_warn( const std::string& a_msg_text ) const;
             void slack_error( const std::string& a_msg_text ) const;
             void slack_critical( const std::string& a_msg_text ) const;
+
+            mv_referrable( std::string, queue_name );
     };
 
 } /* namespace sandfly */
