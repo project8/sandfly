@@ -15,6 +15,15 @@ namespace sandfly
             virtual ~error() noexcept;
     };
 
+    class fatal_error : public scarab::base_exception< fatal_error >
+    {
+        public:
+            fatal_error();
+            fatal_error( const fatal_error& p_copy );
+            fatal_error& operator=( const fatal_error& p_copy );
+            virtual ~fatal_error() noexcept;
+    };
+
 } /* namespace sandfly */
 
 #endif /* SANDFLY_ERROR_HH_ */

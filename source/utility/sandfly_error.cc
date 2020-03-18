@@ -22,5 +22,23 @@ namespace sandfly
     {
     }
 
+
+    fatal_error::fatal_error() :
+            base_exception()
+    {
+    }
+    fatal_error::fatal_error( const fatal_error& p_copy ) :
+            base_exception( p_copy )
+    {
+    }
+    fatal_error& fatal_error::operator=( const fatal_error& p_copy )
+    {
+        base_exception::operator=( p_copy );
+        return *this;
+    }
+    fatal_error::~fatal_error() noexcept
+    {
+    }
+
 } /* namespace sandfly */
 
