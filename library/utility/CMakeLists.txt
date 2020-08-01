@@ -2,6 +2,10 @@
 # utility #
 ###########
 
+include_directories( BEFORE
+    ${PROJECT_SOURCE_DIR}/library/utility
+)
+
 set( headers
     locked_resource.hh
     message_relayer.hh
@@ -26,6 +30,10 @@ set( sources
 # library #
 ###########
 
-midge_library( SandflyUtility sources dependencies )
+pbuilder_library(
+    TARGET SandflyUtility
+    SOURCES ${sources}
+)
+
 pbuilder_install_headers( ${headers} )
 

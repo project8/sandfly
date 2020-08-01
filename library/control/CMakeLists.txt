@@ -2,6 +2,11 @@
 # control #
 ###########
 
+include_directories( BEFORE
+    ${PROJECT_SOURCE_DIR}/library/utility
+    ${PROJECT_SOURCE_DIR}/library/control
+)
+
 set( headers
     batch_executor.hh
     butterfly_house.hh
@@ -41,6 +46,13 @@ set( dependencies
 ###########
 
 midge_library( SandflyControl sources dependencies )
+
+pbuilder_library(
+    TARGET SandflyControl
+    SOURCES ${sources}
+    PROJECT_LIBRARIES ${dependencies}
+)
+
 pbuilder_install_headers( ${headers} )
 
 

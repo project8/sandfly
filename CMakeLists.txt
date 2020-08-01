@@ -61,15 +61,9 @@ set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFI
 # sandfly #
 ###########
 
-# add include directories
-include_directories( BEFORE
-    source/control
-    source/utility
-)
 
 # build this project
-add_subdirectory( source/utility )
-add_subdirectory( source/control )
+add_subdirectory( library )
 
 #add_subdirectory( source/applications )
 #add_subdirectory( source/test )
