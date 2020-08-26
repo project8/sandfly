@@ -2,8 +2,8 @@
 
 pbuilder_use_sm_library( Midge Midge )
 
-add_subdirectory( source/utility )
-add_subdirectory( source/control )
+add_subdirectory( utility )
+add_subdirectory( control )
 
 pbuilder_component_install_and_export(
     COMPONENT Library
