@@ -109,6 +109,27 @@ namespace sandfly
             /// Can throw sandfly::error; daq_control will NOT be usable
             void stop_run();
 
+        protected:
+            /// Handle called to perform initialization
+            virtual void on_initialize() {}
+            /// Handle called just before the midge package is run
+            virtual void on_pre_midge_run() {}
+            /// Handle called just after the midge package finishes running (both for successful and unsuccessful exit conditions)
+            virtual void on_post_midge_run() {}
+            /// Handle called when control is complete and exiting normally
+            virtual void on_done() {}
+            /// Handle called when an error has been encountered
+            virtual void on_error() {}
+            /// Handle called when performing asynchronous activation (just before notifying the condition variable)
+            virtual void on_activate() {}
+            /// Handle called when deactivating (just before canceling midge)
+            virtual void on_deactivate() {}
+            /// Handle called before run takes place (i.e. control is unpaused)
+            virtual void on_pre_run() {}
+            /// Handle called after run finishes (i.e. control is paused)
+            virtual void on_post_run() {}
+
+
         public:
             void apply_config( const std::string& a_node_name, const scarab::param_node& a_config );
             void dump_config( const std::string& a_node_name, scarab::param_node& a_config );
@@ -130,16 +151,10 @@ namespace sandfly
             dripline::reply_ptr_t handle_dump_config_request( const dripline::request_ptr_t a_request );
             dripline::reply_ptr_t handle_run_command_request( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_set_filename_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_set_description_request( const dripline::request_ptr_t a_request );
             dripline::reply_ptr_t handle_set_duration_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_set_use_monarch_request( const dripline::request_ptr_t a_request );
 
             dripline::reply_ptr_t handle_get_status_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_get_filename_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_get_description_request( const dripline::request_ptr_t a_request );
             dripline::reply_ptr_t handle_get_duration_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_get_use_monarch_request( const dripline::request_ptr_t a_request );
 
         private:
             void do_cancellation( int a_code );
@@ -165,15 +180,7 @@ namespace sandfly
             message_relayer* f_msg_relay;
 
         public:
-            void set_filename( const std::string& a_filename, unsigned a_file_num = 0 );
-            const std::string& get_filename( unsigned a_file_num = 0 );
-
-            void set_description( const std::string& a_desc, unsigned a_file_num = 0 );
-            const std::string& get_description( unsigned a_file_num = 0 );
-
             mv_accessible( unsigned, run_duration );
-
-            mv_accessible( bool, use_monarch );
 
         public:
             enum class status:uint32_t

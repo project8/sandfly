@@ -7,7 +7,6 @@
 
 #include "daq_control.hh"
 
-#include "butterfly_house.hh"
 #include "message_relayer.hh"
 #include "node_builder.hh"
 
@@ -69,7 +68,7 @@ namespace sandfly
 
     void daq_control::initialize()
     {
-        butterfly_house::get_instance()->prepare_files( f_daq_config );
+        this->on_initialize();
         return;
     }
 
@@ -145,6 +144,8 @@ namespace sandfly
                     continue;
                 }
 
+                this->on_pre_midge_run();
+
                 // set midge's running callback
                 f_midge_pkg->set_running_callback(
                         [this, &a_ready_condition_variable, &a_ready_mutex]() {
@@ -174,6 +175,9 @@ namespace sandfly
                 }
 
                 LDEBUG( plog, "Midge has finished running" );
+
+                this->on_post_midge_run();
+
                 if( t_e_ptr )
                 {
                     LDEBUG( plog, "An exception from midge is present; rethrowing" );
@@ -260,6 +264,7 @@ namespace sandfly
             else if( t_status == status::done )
             {
                 LINFO( plog, "Exiting DAQ control" );
+                this->on_done();
                 f_node_bindings = nullptr;
                 break;
             }
@@ -267,6 +272,7 @@ namespace sandfly
             {
                 LERROR( plog, "DAQ control is in an error state" );
                 f_msg_relay->slack_error( "DAQ control is in an error state and will now exit" );
+                this->on_error();
                 f_node_bindings = nullptr;
                 scarab::signal_handler::cancel_all( RETURN_ERROR );
                 break;
@@ -289,6 +295,8 @@ namespace sandfly
         {
             throw status_error() << "DAQ control is not in the deactivated state";
         }
+
+        this->on_activate();
 
         LDEBUG( plog, "Setting status to activating" );
         set_status( status::activating );
@@ -320,6 +328,9 @@ namespace sandfly
         }
 
         set_status( status::deactivating );
+
+        this->on_deactivate();
+
         if( f_midge_pkg.have_lock() )
         {
             LDEBUG( plog, "Canceling DAQ worker from DAQ control" );
@@ -367,23 +378,7 @@ namespace sandfly
         LINFO( plog, "Run is commencing" );
         f_msg_relay->slack_notice( "Run is commencing" );
 
-        if( f_use_monarch )
-        {
-            LDEBUG( plog, "Starting egg files" );
-            try
-            {
-                butterfly_house::get_instance()->start_files();
-            }
-            catch( std::exception& e )
-            {
-                LERROR( plog, "Unable to start files: " << e.what() );
-                f_msg_relay->slack_error( std::string("Unable to start files: ") + e.what() );
-                set_status( status::error );
-                LDEBUG( plog, "Canceling midge" );
-                if( f_midge_pkg.have_lock() ) f_midge_pkg->cancel();
-                return;
-            }
-        }
+        this->on_pre_run();
 
         typedef std::chrono::steady_clock::duration duration_t;
         typedef std::chrono::steady_clock::time_point time_point_t;
@@ -450,23 +445,7 @@ namespace sandfly
         if( f_do_break_run ) LINFO( plog, "Run was stopped manually" );
         if( is_canceled() ) LINFO( plog, "Run was cancelled" );
 
-        if( f_use_monarch )
-        {
-            LDEBUG( plog, "Finishing egg files" );
-            try
-            {
-                butterfly_house::get_instance()->finish_files();
-            }
-            catch( std::exception& e )
-            {
-                LERROR( plog, "Unable to finish files: " << e.what() );
-                f_msg_relay->slack_error( std::string("Unable to finish files: ") + e.what() );
-                set_status( status::error );
-                LDEBUG( plog, "Canceling midge" );
-                if( f_midge_pkg.have_lock() ) f_midge_pkg->cancel();
-                return;
-            }
-        }
+        this->on_post_run();
 
         return;
     }
@@ -872,49 +851,6 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_set_filename_request( const dripline::request_ptr_t a_request )
-    {
-        try
-        {
-            unsigned t_file_num = 0;
-            if( a_request->parsed_specifier().size() > 0)
-            {
-                t_file_num = std::stoi( a_request->parsed_specifier().front() );
-            }
-
-            std::string t_filename =  a_request->payload()["values"][0]().as_string();
-            LDEBUG( plog, "Setting filename for file <" << t_file_num << "> to <" << t_filename << ">" );
-            set_filename( t_filename, t_file_num );
-            return a_request->reply( dripline::dl_success(), "Filename set" );
-        }
-        catch( std::exception& e )
-        {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to set filename: " ) + e.what() );
-        }
-    }
-
-    dripline::reply_ptr_t daq_control::handle_set_description_request( const dripline::request_ptr_t a_request )
-    {
-        try
-        {
-            unsigned t_file_num = 0;
-            if( a_request->parsed_specifier().size() > 0)
-            {
-                t_file_num = std::stoi( a_request->parsed_specifier().front() );
-            }
-
-            std::string t_description =  a_request->payload()["values"][0]().as_string();
-            LDEBUG( plog, "Setting description for file <" << t_file_num << "> to <" << t_description << ">" );
-            set_description( t_description, t_file_num );
-
-            return a_request->reply( dripline::dl_success(), "Description set" );
-        }
-        catch( std::exception& e )
-        {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to set description: " ) + e.what() );
-        }
-    }
-
     dripline::reply_ptr_t daq_control::handle_set_duration_request( const dripline::request_ptr_t a_request )
     {
         try
@@ -935,20 +871,6 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_set_use_monarch_request( const dripline::request_ptr_t a_request )
-    {
-        try
-        {
-            f_use_monarch =  a_request->payload()["values"][0]().as_bool();
-            LDEBUG( plog, "Use-monarch set to <" << f_use_monarch << ">" );
-            return a_request->reply( dripline::dl_success(), "Use Monarch set" );
-        }
-        catch( std::exception& e )
-        {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to set use-monarch: " ) + e.what() );
-        }
-    }
-
     dripline::reply_ptr_t daq_control::handle_get_status_request( const dripline::request_ptr_t a_request )
     {
         param_node t_server_node;
@@ -964,50 +886,6 @@ namespace sandfly
 
     }
 
-    dripline::reply_ptr_t daq_control::handle_get_filename_request( const dripline::request_ptr_t a_request )
-    {
-        try
-        {
-            unsigned t_file_num = 0;
-            if( a_request->parsed_specifier().size() > 0)
-            {
-                t_file_num = std::stoi( a_request->parsed_specifier().front() );
-            }
-
-            param_array t_values_array;
-            t_values_array.push_back( param_value( get_filename( t_file_num ) ) );
-            param_ptr_t t_payload_ptr( new param_node() );
-            t_payload_ptr->as_node().add( "values", t_values_array );
-            return a_request->reply( dripline::dl_success(), "Filename request completed", std::move(t_payload_ptr) );
-        }
-        catch( scarab::error& e )
-        {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to get description: " ) + e.what() );
-        }
-    }
-
-    dripline::reply_ptr_t daq_control::handle_get_description_request( const dripline::request_ptr_t a_request )
-    {
-        try
-        {
-            unsigned t_file_num = 0;
-            if( a_request->parsed_specifier().size() > 0)
-            {
-                t_file_num = std::stoi( a_request->parsed_specifier().front() );
-            }
-
-            param_array t_values_array;
-            t_values_array.push_back( param_value( get_description( t_file_num ) ) );
-            param_ptr_t t_payload_ptr( new param_node() );
-            t_payload_ptr->as_node().add( "values", t_values_array );
-            return a_request->reply( dripline::dl_success(), "Description request completed", std::move(t_payload_ptr) );
-        }
-        catch( scarab::error& e )
-        {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to get description: " ) + e.what() );
-        }
-    }
-
     dripline::reply_ptr_t daq_control::handle_get_duration_request( const dripline::request_ptr_t a_request )
     {
         param_array t_values_array;
@@ -1017,68 +895,6 @@ namespace sandfly
         t_payload_ptr->as_node().add( "values", t_values_array );
 
         return a_request->reply( dripline::dl_success(), "Duration request completed", std::move(t_payload_ptr) );
-    }
-
-    dripline::reply_ptr_t daq_control::handle_get_use_monarch_request( const dripline::request_ptr_t a_request )
-    {
-        param_array t_values_array;
-        t_values_array.push_back( param_value( f_use_monarch ) );
-
-        param_ptr_t t_payload_ptr( new param_node() );
-        t_payload_ptr->as_node().add( "values", t_values_array );
-
-        return a_request->reply( dripline::dl_success(), "Use Monarch request completed", std::move(t_payload_ptr) );
-    }
-
-
-    void daq_control::set_filename( const std::string& a_filename, unsigned a_file_num )
-    {
-        try
-        {
-            butterfly_house::get_instance()->set_filename( a_filename, a_file_num );
-            return;
-        }
-        catch( error& )
-        {
-            throw;
-        }
-    }
-
-    const std::string& daq_control::get_filename( unsigned a_file_num )
-    {
-        try
-        {
-            return butterfly_house::get_instance()->get_filename( a_file_num );
-        }
-        catch( error& )
-        {
-            throw;
-        }
-    }
-
-    void daq_control::set_description( const std::string& a_desc, unsigned a_file_num )
-    {
-        try
-        {
-            butterfly_house::get_instance()->set_description( a_desc, a_file_num );
-            return;
-        }
-        catch( error& )
-        {
-            throw;
-        }
-    }
-
-    const std::string& daq_control::get_description( unsigned a_file_num )
-    {
-        try
-        {
-            return butterfly_house::get_instance()->get_description( a_file_num );
-        }
-        catch( error& )
-        {
-            throw;
-        }
     }
 
     uint32_t daq_control::status_to_uint( status a_status )
