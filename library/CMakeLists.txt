@@ -1,6 +1,7 @@
 # CMakeLists.txt for sandfly/library
 
 pbuilder_use_sm_library( Midge Midge )
+pbuilder_use_sm_library( Dripline Dripline )
 
 add_subdirectory( utility )
 add_subdirectory( control )
