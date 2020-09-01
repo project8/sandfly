@@ -1,14 +1,14 @@
 /*
- * mt_run_server.cc
+ * conductor.cc
  *
  *  Created on: May 6, 2015
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
-#include "run_server.hh"
+#include "conductor.hh"
 
 #include "sandfly_constants.hh"
-#include "daq_control.hh"
+#include "run_control.hh"
 #include "message_relayer.hh"
 #include "request_receiver.hh"
 #include "signal_handler.hh"
@@ -27,25 +27,25 @@ using scarab::version_semantic;
 
 namespace sandfly
 {
-    LOGGER( plog, "run_server" );
+    LOGGER( plog, "conductor" );
 
-    run_server::run_server() :
+    conductor::conductor() :
             scarab::cancelable(),
             f_return( RETURN_SUCCESS ),
             f_request_receiver(),
             f_batch_executor(),
-            f_daq_control(),
+            f_run_control(),
             f_stream_manager(),
             f_component_mutex(),
             f_status( k_initialized )
     {
     }
 
-    run_server::~run_server()
+    conductor::~conductor()
     {
     }
 
-    void run_server::execute( const param_node& a_config )
+    void conductor::execute( const param_node& a_config )
     {
         LPROG( plog, "Creating server objects" );
 
@@ -84,10 +84,10 @@ namespace sandfly
 
             // daq control
             LDEBUG( plog, "Creating DAQ control" );
-            f_daq_control.reset( new daq_control( a_config, f_stream_manager ) );
-            // provide the pointer to the daq_control to control_access
-            control_access::set_daq_control( f_daq_control );
-            f_daq_control->initialize();
+            f_run_control.reset( new run_control( a_config, f_stream_manager ) );
+            // provide the pointer to the run_control to control_access
+            control_access::set_run_control( f_run_control );
+            f_run_control->initialize();
 
             if( a_config.has( "streams" ) && a_config["streams"].is_node() )
             {
@@ -116,11 +116,11 @@ namespace sandfly
 
         using namespace std::placeholders;
 
-        // bind handlers in the daq_control
-        f_daq_control->register_handlers( f_request_receiver );
+        // bind handlers in the run_control
+        f_run_control->register_handlers( f_request_receiver );
 
         // add get request handlers
-        //f_request_receiver->register_get_handler( "server-status", std::bind( &run_server::handle_get_server_status_request, this, _1 ) );
+        //f_request_receiver->register_get_handler( "server-status", std::bind( &conductor::handle_get_server_status_request, this, _1 ) );
         f_request_receiver->register_get_handler( "node-config", std::bind( &stream_manager::handle_dump_config_node_request, f_stream_manager, _1 ) );
         f_request_receiver->register_get_handler( "stream-list", std::bind( &stream_manager::handle_get_stream_list_request, f_stream_manager, _1 ) );
         f_request_receiver->register_get_handler( "node-list", std::bind( &stream_manager::handle_get_stream_node_list_request, f_stream_manager, _1 ) );
@@ -131,17 +131,17 @@ namespace sandfly
         // add cmd request handlers
         f_request_receiver->register_cmd_handler( "add-stream", std::bind( &stream_manager::handle_add_stream_request, f_stream_manager, _1 ) );
         f_request_receiver->register_cmd_handler( "remove-stream", std::bind( &stream_manager::handle_remove_stream_request, f_stream_manager, _1 ) );
-        f_request_receiver->register_cmd_handler( "quit", std::bind( &run_server::handle_quit_server_request, this, _1 ) );
+        f_request_receiver->register_cmd_handler( "quit", std::bind( &conductor::handle_quit_server_request, this, _1 ) );
 
-        std::condition_variable t_daq_control_ready_cv;
-        std::mutex t_daq_control_ready_mutex;
+        std::condition_variable t_run_control_ready_cv;
+        std::mutex t_run_control_ready_mutex;
 
         // start threads
         LPROG( plog, "Starting threads" );
         std::exception_ptr t_dc_ex_ptr;
-        std::thread t_daq_control_thread( &daq_control::execute, f_daq_control.get(), std::ref(t_daq_control_ready_cv), std::ref(t_daq_control_ready_mutex) );
+        std::thread t_run_control_thread( &run_control::execute, f_run_control.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex) );
         // batch execution to do initial calls (AMQP consume hasn't started yet)
-        std::thread t_executor_thread_initial( &batch_executor::execute, f_batch_executor.get(), std::ref(t_daq_control_ready_cv), std::ref(t_daq_control_ready_mutex), false );
+        std::thread t_executor_thread_initial( &batch_executor::execute, f_batch_executor.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex), false );
         LDEBUG( plog, "Waiting for the batch executor to finish" );
         t_executor_thread_initial.join();
         LDEBUG( plog, "Initial batch executions complete" );
@@ -150,8 +150,8 @@ namespace sandfly
         {
             // now execute the request receiver to start consuming
             //     and start the batch executor in infinite mode so that more command sets may be staged later
-            std::thread t_executor_thread( &batch_executor::execute, f_batch_executor.get(), std::ref(t_daq_control_ready_cv), std::ref(t_daq_control_ready_mutex), true );
-            std::thread t_receiver_thread( &request_receiver::execute, f_request_receiver.get(), std::ref(t_daq_control_ready_cv), std::ref(t_daq_control_ready_mutex) );
+            std::thread t_executor_thread( &batch_executor::execute, f_batch_executor.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex), true );
+            std::thread t_receiver_thread( &request_receiver::execute, f_request_receiver.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex) );
 
             t_lock.unlock();
 
@@ -169,7 +169,7 @@ namespace sandfly
             // and then wait for the controllers to finish up...
             t_executor_thread.join();
         }
-        t_daq_control_thread.join();
+        t_run_control_thread.join();
         LPROG( plog, "DAQ control thread has ended" );
 
         t_sig_hand.remove_cancelable( this );
@@ -184,20 +184,20 @@ namespace sandfly
         return;
     }
 
-    void run_server::do_cancellation( int a_code )
+    void conductor::do_cancellation( int a_code )
     {
         LDEBUG( plog, "Canceling run server with code <" << a_code << ">" );
         f_return = a_code;
         message_relayer::get_instance()->slack_notice( "Sandfly is shutting down" );
         f_batch_executor->cancel( a_code );
         f_request_receiver->cancel( a_code );
-        f_daq_control->cancel( a_code );
+        f_run_control->cancel( a_code );
         message_relayer::get_instance()->cancel( a_code );
         //f_node_manager->cancel();
         return;
     }
 
-    void run_server::quit_server()
+    void conductor::quit_server()
     {
         LINFO( plog, "Shutting down the server" );
         cancel( f_status == k_error ? RETURN_ERROR : RETURN_SUCCESS );
@@ -205,11 +205,11 @@ namespace sandfly
     }
 
 
-    dripline::reply_ptr_t run_server::handle_get_server_status_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t conductor::handle_get_server_status_request( const dripline::request_ptr_t a_request )
     {
         /*
         param_node* t_server_node = new param_node();
-        t_server_node->add( "status", new param_value( run_server::interpret_status( get_status() ) ) );
+        t_server_node->add( "status", new param_value( conductor::interpret_status( get_status() ) ) );
 
         f_component_mutex.lock();
         if( f_request_receiver != NULL )
@@ -242,7 +242,7 @@ namespace sandfly
         return a_request->reply( dripline::dl_service_error_invalid_method(), "Server status request not yet supported" );
     }
 
-    dripline::reply_ptr_t run_server::handle_quit_server_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t conductor::handle_quit_server_request( const dripline::request_ptr_t a_request )
     {
         dripline::reply_ptr_t t_return = a_request->reply( dripline::dl_success(), "Server-quit command processed" );
         quit_server();
@@ -250,7 +250,7 @@ namespace sandfly
     }
 
 
-    std::string run_server::interpret_status( status a_status )
+    std::string conductor::interpret_status( status a_status )
     {
         switch( a_status )
         {

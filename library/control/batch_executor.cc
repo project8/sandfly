@@ -7,7 +7,7 @@
 
 //sandfly includes
 #include "batch_executor.hh"
-#include "daq_control.hh"
+#include "run_control.hh"
 #include "sandfly_constants.hh"
 #include "request_receiver.hh"
 
@@ -160,20 +160,20 @@ namespace sandfly
             duration: 200
             filenames: '["/tmp/foo_t.yaml", "/tmp/foo_f.yaml"]'
     */
-    void batch_executor::execute( std::condition_variable& a_daq_control_ready_cv, std::mutex& a_daq_control_ready_mutex, bool a_run_forever )
+    void batch_executor::execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex, bool a_run_forever )
     {
-        if( daq_control_expired() )
+        if( run_control_expired() )
         {
             LERROR( plog, "Unable to get access to the DAQ control" );
             scarab::signal_handler::cancel_all( RETURN_ERROR );
             return;
         }
-        dc_ptr_t t_daq_control_ptr = use_daq_control();
+        dc_ptr_t t_run_control_ptr = use_run_control();
 
-        while ( ! t_daq_control_ptr->is_ready_at_startup() && ! is_canceled() )
+        while ( ! t_run_control_ptr->is_ready_at_startup() && ! is_canceled() )
         {
-            std::unique_lock< std::mutex > t_daq_control_lock( a_daq_control_ready_mutex );
-            a_daq_control_ready_cv.wait_for( t_daq_control_lock, std::chrono::seconds(1) );
+            std::unique_lock< std::mutex > t_run_control_lock( a_run_control_ready_mutex );
+            a_run_control_ready_cv.wait_for( t_run_control_lock, std::chrono::seconds(1) );
         }
 
         while ( ( a_run_forever || f_action_queue.size() ) && ! is_canceled() )
@@ -204,11 +204,11 @@ namespace sandfly
         // wait until daq status is no longer "running"
         if ( t_action.f_is_custom_action )
         {
-            daq_control::status t_status = daq_control::uint_to_status( t_request_reply->payload()["server"]["status-value"]().as_uint() );
-            while ( t_status == daq_control::status::running )
+            run_control::status t_status = run_control::uint_to_status( t_request_reply->payload()["server"]["status-value"]().as_uint() );
+            while ( t_status == run_control::status::running )
             {
                 t_request_reply = f_request_receiver->submit_request_message( t_action.f_request_ptr );
-                t_status = daq_control::uint_to_status( t_request_reply->payload()["server"]["status-value"]().as_uint() );
+                t_status = run_control::uint_to_status( t_request_reply->payload()["server"]["status-value"]().as_uint() );
                 std::this_thread::sleep_for( std::chrono::milliseconds( t_action.f_sleep_duration_ms ) );
             }
         }

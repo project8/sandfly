@@ -19,7 +19,7 @@
 namespace sandfly
 {
     class run_server;
-    class daq_control;
+    class run_control;
     /*!
      @class request_receiver
      @author N. S. Oblath
@@ -38,7 +38,7 @@ namespace sandfly
             request_receiver( const scarab::param_node& a_master_config );
             virtual ~request_receiver();
 
-            void execute( std::condition_variable& a_daq_control_ready_cv, std::mutex& a_daq_control_ready_mutex );
+            void execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex );
 
             mv_referrable_const( scarab::param_node, set_conditions );
         private:

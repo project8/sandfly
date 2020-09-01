@@ -7,7 +7,7 @@
 
 #include "control_access.hh"
 
-#include "daq_control.hh"
+#include "run_control.hh"
 
 #include "logger.hh"
 
@@ -15,7 +15,7 @@ namespace sandfly
 {
     LOGGER( plog, "control_access" );
 
-    std::weak_ptr< daq_control > control_access::f_daq_control = std::weak_ptr< daq_control >();
+    std::weak_ptr< run_control > control_access::f_run_control = std::weak_ptr< run_control >();
 
     control_access::control_access()
     {
@@ -25,10 +25,10 @@ namespace sandfly
     {
     }
 
-    void control_access::set_daq_control( std::weak_ptr< daq_control > a_daq_control )
+    void control_access::set_run_control( std::weak_ptr< run_control > a_run_control )
     {
-        f_daq_control = a_daq_control;
-        LDEBUG( plog, "DAQ control access set; is valid? " << ! f_daq_control.expired() );
+        f_run_control = a_run_control;
+        LDEBUG( plog, "DAQ control access set; is valid? " << ! f_run_control.expired() );
     }
 
 } /* namespace sandfly */

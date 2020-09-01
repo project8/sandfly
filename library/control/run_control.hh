@@ -1,12 +1,12 @@
 /*
- * daq_control.hh
+ * run_control.hh
  *
  *  Created on: Jan 22, 2016
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
-#ifndef SANDFLY_DAQ_CONTROL_HH_
-#define SANDFLY_DAQ_CONTROL_HH_
+#ifndef SANDFLY_RUN_CONTROL_HH_
+#define SANDFLY_RUN_CONTROL_HH_
 
 #include "control_access.hh"
 #include "stream_manager.hh" // for midge_package
@@ -28,37 +28,35 @@ namespace sandfly
     class request_receiver;
 
     /*!
-     @class daq_control
-     @author N. S. Oblath
+     @class run_control
+     @author N.S. Oblath
 
-     @brief Controls Sandfly's status and forwards requests to the DAQ nodes.
+     @brief Controls Sandfly's status and forwards requests to the processing nodes.
 
      @details
      Handles all requests received via request_receiver that don't affect the stream setup directly.
-     It switches between daq-states, starts and stops runs by un-pausing and pausing midge and forwards run-daq-commands.
+     It switches between states, and starts and stops runs by un-pausing and pausing midge.
 
-     DAQ states:
+     States:
      - Deactivated: initial state and state when Midge is not running.
-     - Activating: an instruction to activate has been received, and the DAQ control is in the process of getting things going.
-     - Activated: Midge is running; the DAQ is ready to go.
-     - Deactivating: an instruction to deactivate has been received, and the DAQ control is in the process of stopping things.
-     - Canceled: the DAQ control has received an instruction from on high to exit immediately, and is in the process of doing so.
-     - Do Restart: Midge experienced a non-fatal error.  The DAQ should be restarted and things will be fine.
-     - Done: the DAQ control has completed operation and is ready for Sandfly to exit.
+     - Activating: an instruction to activate has been received, and the run control is in the process of getting things going.
+     - Activated: Midge is running; the processing nodes are ready to go.
+     - Deactivating: an instruction to deactivate has been received, and the run control is in the process of stopping things.
+     - Canceled: the run control has received an instruction from on high to exit immediately, and is in the process of doing so.
+     - Do Restart: Midge experienced a non-fatal error.  The run should be restarted and things will be fine.
+     - Done: the run control has completed operation and is ready for Sandfly to exit.
      - Error: something went wrong; Sandfly should be restarted.
 
-     Startup readiness: whether the DAQ control is ready for use after startup depends on whether
+     Startup readiness: whether the run control is ready for use after startup depends on whether
      it was told to activate on startup or not:
-     - YES, activate on startup: DAQ control must be in the "activated" state to be ready
-     - NO, wait to activate: DAQ control can be in the "deactivate," "activating,", or "activated" states to be ready
+     - YES, activate on startup: run control must be in the "activated" state to be ready
+     - NO, wait to activate: run control can be in the "deactivate," "activating,", or "activated" states to be ready
 
      Settings that can be applied in the "daq" section of the master config:
      - "duration" (integer): the duration of the next run in ms
      - "activate-at-startup" (boolean): whether or not the DAQ control is activated immediately on startup
-     - "n-files" (integer): number of files that will be written in parallel
-     - "max-file-size-mb" (float): maximum egg file size; writing will switch to a new file after that is reached
      */
-    class daq_control : public scarab::cancelable, public control_access
+    class run_control : public scarab::cancelable, public control_access
     {
         public:
             class run_error : public error
@@ -75,8 +73,8 @@ namespace sandfly
             };
 
         public:
-            daq_control( const scarab::param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr );
-            virtual ~daq_control();
+            run_control( const scarab::param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr );
+            virtual ~run_control();
 
             /// Pre-execution initialization (call after setting the control_access pointer)
             void initialize();
@@ -85,29 +83,29 @@ namespace sandfly
             void execute( std::condition_variable& a_ready_condition_variable, std::mutex& a_ready_mutex );
 
             /// Start the DAQ into the activated state
-            /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw sandfly::error; daq_control will NOT be usable
+            /// Can throw run_control::status_error; run_control will still be usable
+            /// Can throw sandfly::error; run_control will NOT be usable
             void activate();
             /// Restarts the DAQ into the activated state
-            /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw sandfly::error; daq_control will NOT be usable
+            /// Can throw run_control::status_error; run_control will still be usable
+            /// Can throw sandfly::error; run_control will NOT be usable
             void reactivate();
             /// Returns the DAQ to the deactivated state
-            /// Can throw daq_control::status_error; daq_control will still be usable
-            /// Can throw sandfly::error; daq_control will NOT be usable
+            /// Can throw run_control::status_error; run_control will still be usable
+            /// Can throw sandfly::error; run_control will NOT be usable
             void deactivate();
 
             bool is_ready_at_startup() const;
 
             /// Start a run
-            /// Can throw daq_control::run_error or status_error; daq_control will still be usable
-            /// Can throw sandfly::error; daq_control will NOT be usable
+            /// Can throw run_control::run_error or status_error; run_control will still be usable
+            /// Can throw sandfly::error; run_control will NOT be usable
             /// Stop run with stop_run()
             void start_run();
 
             /// Stop a run
-            /// Can throw daq_control::run_error or status_error; daq_control will still be usable
-            /// Can throw sandfly::error; daq_control will NOT be usable
+            /// Can throw run_control::run_error or status_error; run_control will still be usable
+            /// Can throw sandfly::error; run_control will NOT be usable
             void stop_run();
 
         protected:
@@ -140,9 +138,9 @@ namespace sandfly
             bool run_command( const std::string& a_node_name, const std::string& a_cmd, const scarab::param_node& a_args );
 
         public:
-            virtual dripline::reply_ptr_t handle_activate_daq_control( const dripline::request_ptr_t a_request );
-            virtual dripline::reply_ptr_t handle_reactivate_daq_control( const dripline::request_ptr_t a_request );
-            virtual dripline::reply_ptr_t handle_deactivate_daq_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_activate_run_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_reactivate_run_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_deactivate_run_control( const dripline::request_ptr_t a_request );
 
             virtual dripline::reply_ptr_t handle_start_run_request( const dripline::request_ptr_t a_request );
 
@@ -214,12 +212,12 @@ namespace sandfly
 
     };
 
-    inline daq_control::status daq_control::get_status() const
+    inline run_control::status run_control::get_status() const
     {
         return f_status.load();
     }
 
-    inline void daq_control::set_status( status a_status )
+    inline void run_control::set_status( status a_status )
     {
         f_status.store( a_status );
         return;
@@ -228,4 +226,4 @@ namespace sandfly
 
 } /* namespace sandfly */
 
-#endif /* SANDFLY_DAQ_CONTROL_HH_ */
+#endif /* SANDFLY_RUN_CONTROL_HH_ */

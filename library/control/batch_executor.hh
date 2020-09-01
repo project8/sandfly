@@ -45,7 +45,7 @@ namespace sandfly
 
     // forward declarations
     class request_receiver;
-    class daq_control;
+    class run_control;
 
     struct action_info
     {
@@ -76,7 +76,7 @@ namespace sandfly
             dripline::reply_ptr_t do_batch_cmd_request( const std::string& a_command, const dripline::request_ptr_t a_request );
             dripline::reply_ptr_t do_replace_actions_request( const std::string& a_command, const dripline::request_ptr_t a_request );
 
-            void execute( std::condition_variable& a_daq_control_ready_cv, std::mutex& a_daq_control_ready_mutex, bool a_run_forever = false );
+            void execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex, bool a_run_forever = false );
 
         private:
             std::shared_ptr<request_receiver> f_request_receiver;

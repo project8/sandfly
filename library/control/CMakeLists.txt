@@ -9,11 +9,11 @@ include_directories( BEFORE
 
 set( headers
     batch_executor.hh
+    conductor.hh
     control_access.hh
-    daq_control.hh
     node_builder.hh
     request_receiver.hh
-    run_server.hh
+    run_control.hh
     server_config.hh
     stream_manager.hh
     stream_preset.hh
@@ -21,11 +21,11 @@ set( headers
 
 set( sources
     batch_executor.cc
+    conductor.cc
     control_access.cc
-    daq_control.cc
     node_builder.cc
     request_receiver.cc
-    run_server.cc
+    run_control.cc
     server_config.cc
     stream_manager.cc
     stream_preset.cc

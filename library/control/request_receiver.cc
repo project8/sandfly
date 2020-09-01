@@ -1,5 +1,5 @@
 
-#include "daq_control.hh"
+#include "run_control.hh"
 #include "request_receiver.hh"
 #include "dripline_constants.hh"
 
@@ -38,17 +38,17 @@ namespace sandfly
     {
     }
 
-    void request_receiver::execute( std::condition_variable& a_daq_control_ready_cv, std::mutex& a_daq_control_ready_mutex )
+    void request_receiver::execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex )
     {
         set_status( k_starting );
 
-        if( daq_control_expired() )
+        if( run_control_expired() )
         {
             LERROR( plog, "Unable to get access to the DAQ control" );
             scarab::signal_handler::cancel_all( RETURN_ERROR );
             return;
         }
-        dc_ptr_t t_daq_control_ptr = use_daq_control();
+        dc_ptr_t t_run_control_ptr = use_run_control();
 
         // start the service
         if( ! start() && f_make_connection )
@@ -58,10 +58,10 @@ namespace sandfly
             return;
         }
 
-        while ( ! t_daq_control_ptr->is_ready_at_startup() && ! cancelable::is_canceled() )
+        while ( ! t_run_control_ptr->is_ready_at_startup() && ! cancelable::is_canceled() )
         {
-            std::unique_lock< std::mutex > t_daq_control_lock( a_daq_control_ready_mutex );
-            a_daq_control_ready_cv.wait_for( t_daq_control_lock, std::chrono::seconds(1) );
+            std::unique_lock< std::mutex > t_run_control_lock( a_run_control_ready_mutex );
+            a_run_control_ready_cv.wait_for( t_run_control_lock, std::chrono::seconds(1) );
         }
 
         if ( f_make_connection && ! cancelable::is_canceled() ) {

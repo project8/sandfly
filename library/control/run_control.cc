@@ -1,11 +1,11 @@
 /*
- * daq_control.cc
+ * run_control.cc
  *
  *  Created on: Jan 22, 2016
  *      Author: nsoblath
  */
 
-#include "daq_control.hh"
+#include "run_control.hh"
 
 #include "message_relayer.hh"
 #include "node_builder.hh"
@@ -36,9 +36,9 @@ using std::string;
 
 namespace sandfly
 {
-    LOGGER( plog, "daq_control" );
+    LOGGER( plog, "run_control" );
 
-    daq_control::daq_control( const param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr ) :
+    run_control::run_control( const param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr ) :
             scarab::cancelable(),
             control_access(),
             f_activation_condition(),
@@ -64,17 +64,17 @@ namespace sandfly
         set_run_duration( f_daq_config.get_value( "duration", get_run_duration() ) );
     }
 
-    daq_control::~daq_control()
+    run_control::~run_control()
     {
     }
 
-    void daq_control::initialize()
+    void run_control::initialize()
     {
         this->on_initialize();
         return;
     }
 
-    void daq_control::execute( std::condition_variable& a_ready_condition_variable, std::mutex& a_ready_mutex )
+    void run_control::execute( std::condition_variable& a_ready_condition_variable, std::mutex& a_ready_mutex )
     {
         // if we're supposed to activate on startup, we'll call activate asynchronously
         std::future< void > t_activation_return;
@@ -95,7 +95,7 @@ namespace sandfly
         while( ! is_canceled() )
         {
             status t_status = get_status();
-            LDEBUG( plog, "daq_control execute loop; status is <" << interpret_status( t_status ) << ">" );
+            LDEBUG( plog, "run_control execute loop; status is <" << interpret_status( t_status ) << ">" );
             if( ( t_status == status::deactivated ) && ! is_canceled() )
             {
                 while( t_status == status::deactivated )
@@ -284,7 +284,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::activate()
+    void run_control::activate()
     {
         LDEBUG( plog, "Activating DAQ control" );
 
@@ -307,7 +307,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::reactivate()
+    void run_control::reactivate()
     {
         deactivate();
         std::this_thread::sleep_for( std::chrono::seconds(1) );
@@ -315,7 +315,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::deactivate()
+    void run_control::deactivate()
     {
         LDEBUG( plog, "Deactivating DAQ" );
 
@@ -326,7 +326,7 @@ namespace sandfly
 
         if( get_status() != status::activated )
         {
-            throw status_error() << "Invalid state for deactivating: <" + daq_control::interpret_status( get_status() ) + ">; DAQ control must be in activated state";
+            throw status_error() << "Invalid state for deactivating: <" + run_control::interpret_status( get_status() ) + ">; DAQ control must be in activated state";
         }
 
         set_status( status::deactivating );
@@ -342,18 +342,18 @@ namespace sandfly
         return;
     }
 
-    bool daq_control::is_ready_at_startup() const
+    bool run_control::is_ready_at_startup() const
     {
         return f_daq_config["activate-at-startup"]().as_bool() ? (f_status == status::activated) : (f_status == status::activated || f_status == status::deactivated);
     }
 
-    void daq_control::start_run()
+    void run_control::start_run()
     {
         LDEBUG( plog, "Preparing for run" );
 
         if( is_canceled() )
         {
-            throw error() << "daq_control has been canceled";
+            throw error() << "run_control has been canceled";
         }
 
         if( get_status() != status::activated )
@@ -367,13 +367,13 @@ namespace sandfly
         }
 
         LDEBUG( plog, "Launching asynchronous do_run" );
-        f_run_return = std::async( std::launch::async, &daq_control::do_run, this, f_run_duration );
+        f_run_return = std::async( std::launch::async, &run_control::do_run, this, f_run_duration );
         //TODO: use run return?
 
         return;
     }
 
-    void daq_control::do_run( unsigned a_duration )
+    void run_control::do_run( unsigned a_duration )
     {
         // a_duration is in ms
 
@@ -407,7 +407,7 @@ namespace sandfly
             LDEBUG( plog, "Untimed run stopper in use" );
             // conditions that will break the loop:
             //   - last sub-duration was not stopped for a timeout (the other possibility is that f_run_stopper was notified by e.g. stop_run())
-            //   - daq_control has been canceled
+            //   - run_control has been canceled
             while( ! f_do_break_run && ! is_canceled() )
             {
                 f_run_stopper.wait_for( t_run_stop_lock, t_sub_duration );
@@ -420,7 +420,7 @@ namespace sandfly
             // conditions that will break the loop:
             //   - all sub-durations have been completed
             //   - last sub-duration was not stopped for a timeout (the other possibility is that f_run_stopper was notified by e.g. stop_run())
-            //   - daq_control has been canceled
+            //   - run_control has been canceled
 
             time_point_t t_run_start = std::chrono::steady_clock::now();
             time_point_t t_run_end = t_run_start + t_run_duration;
@@ -452,7 +452,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::stop_run()
+    void run_control::stop_run()
     {
         LINFO( plog, "Run stop requested" );
 
@@ -467,7 +467,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::do_cancellation( int a_code )
+    void run_control::do_cancellation( int a_code )
     {
         LDEBUG( plog, "Canceling DAQ control" );
 
@@ -492,7 +492,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::apply_config( const std::string& a_node_name, const scarab::param_node& a_config )
+    void run_control::apply_config( const std::string& a_node_name, const scarab::param_node& a_config )
     {
         if( f_node_bindings == nullptr )
         {
@@ -517,7 +517,7 @@ namespace sandfly
         return;
     }
 
-    void daq_control::dump_config( const std::string& a_node_name, scarab::param_node& a_config )
+    void run_control::dump_config( const std::string& a_node_name, scarab::param_node& a_config )
     {
         if( f_node_bindings == nullptr )
         {
@@ -547,7 +547,7 @@ namespace sandfly
         return;
     }
 
-    bool daq_control::run_command( const std::string& a_node_name, const std::string& a_cmd, const scarab::param_node& a_args )
+    bool run_control::run_command( const std::string& a_node_name, const std::string& a_cmd, const scarab::param_node& a_args )
     {
         if( f_node_bindings == nullptr )
         {
@@ -577,7 +577,7 @@ namespace sandfly
     }
 
 
-    dripline::reply_ptr_t daq_control::handle_activate_daq_control( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_activate_run_control( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -590,7 +590,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_reactivate_daq_control( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_reactivate_run_control( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -603,7 +603,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_deactivate_daq_control( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_deactivate_run_control( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -616,7 +616,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_start_run_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_start_run_request( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -630,7 +630,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_stop_run_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_stop_run_request( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -643,7 +643,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_apply_config_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_apply_config_request( const dripline::request_ptr_t a_request )
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
@@ -717,7 +717,7 @@ namespace sandfly
         return a_request->reply( dripline::dl_success(), "Performed node-config", std::move(t_payload_ptr) );
     }
 
-    dripline::reply_ptr_t daq_control::handle_dump_config_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_dump_config_request( const dripline::request_ptr_t a_request )
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
@@ -776,7 +776,7 @@ namespace sandfly
         return a_request->reply( dripline::dl_success(), "Performed get-active-node-config", std::move(t_payload_ptr) );
     }
 
-    dripline::reply_ptr_t daq_control::handle_run_command_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_run_command_request( const dripline::request_ptr_t a_request )
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
@@ -826,7 +826,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_set_duration_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_set_duration_request( const dripline::request_ptr_t a_request )
     {
         try
         {
@@ -846,7 +846,7 @@ namespace sandfly
         }
     }
 
-    dripline::reply_ptr_t daq_control::handle_get_status_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_get_status_request( const dripline::request_ptr_t a_request )
     {
         param_node t_server_node;
         t_server_node.add( "status", param_value( interpret_status( get_status() ) ) );
@@ -861,7 +861,7 @@ namespace sandfly
 
     }
 
-    dripline::reply_ptr_t daq_control::handle_get_duration_request( const dripline::request_ptr_t a_request )
+    dripline::reply_ptr_t run_control::handle_get_duration_request( const dripline::request_ptr_t a_request )
     {
         param_array t_values_array;
         t_values_array.push_back( param_value( f_run_duration ) );
@@ -872,44 +872,44 @@ namespace sandfly
         return a_request->reply( dripline::dl_success(), "Duration request completed", std::move(t_payload_ptr) );
     }
 
-    void daq_control::register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr )
+    void run_control::register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr )
     {
         using namespace std::placeholders;
 
         // set the run request handler
-        a_receiver_ptr->set_run_handler( std::bind( &daq_control::handle_start_run_request, this, _1 ) );
+        a_receiver_ptr->set_run_handler( std::bind( &run_control::handle_start_run_request, this, _1 ) );
 
         // add get request handlers
-        a_receiver_ptr->register_get_handler( "active-config", std::bind( &daq_control::handle_dump_config_request, this, _1 ) );
-        a_receiver_ptr->register_get_handler( "daq-status", std::bind( &daq_control::handle_get_status_request, this, _1 ) );
-        a_receiver_ptr->register_get_handler( "duration", std::bind( &daq_control::handle_get_duration_request, this, _1 ) );
+        a_receiver_ptr->register_get_handler( "active-config", std::bind( &run_control::handle_dump_config_request, this, _1 ) );
+        a_receiver_ptr->register_get_handler( "daq-status", std::bind( &run_control::handle_get_status_request, this, _1 ) );
+        a_receiver_ptr->register_get_handler( "duration", std::bind( &run_control::handle_get_duration_request, this, _1 ) );
 
         // add set request handlers
-        a_receiver_ptr->register_set_handler( "active-config", std::bind( &daq_control::handle_apply_config_request, this, _1 ) );
-        a_receiver_ptr->register_set_handler( "duration", std::bind( &daq_control::handle_set_duration_request, this, _1 ) );
+        a_receiver_ptr->register_set_handler( "active-config", std::bind( &run_control::handle_apply_config_request, this, _1 ) );
+        a_receiver_ptr->register_set_handler( "duration", std::bind( &run_control::handle_set_duration_request, this, _1 ) );
 
         // add cmd request handlers
-        a_receiver_ptr->register_cmd_handler( "run-daq-cmd", std::bind( &daq_control::handle_run_command_request, this, _1 ) );
-        a_receiver_ptr->register_cmd_handler( "stop-run", std::bind( &daq_control::handle_stop_run_request, this, _1 ) );
-        a_receiver_ptr->register_cmd_handler( "start-run", std::bind( &daq_control::handle_start_run_request, this, _1 ) );
-        a_receiver_ptr->register_cmd_handler( "activate-daq", std::bind( &daq_control::handle_activate_daq_control, this, _1 ) );
-        a_receiver_ptr->register_cmd_handler( "reactivate-daq", std::bind( &daq_control::handle_reactivate_daq_control, this, _1 ) );
-        a_receiver_ptr->register_cmd_handler( "deactivate-daq", std::bind( &daq_control::handle_deactivate_daq_control, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "run-daq-cmd", std::bind( &run_control::handle_run_command_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "stop-run", std::bind( &run_control::handle_stop_run_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "start-run", std::bind( &run_control::handle_start_run_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "activate-daq", std::bind( &run_control::handle_activate_run_control, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "reactivate-daq", std::bind( &run_control::handle_reactivate_run_control, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "deactivate-daq", std::bind( &run_control::handle_deactivate_run_control, this, _1 ) );
 
         this->derived_register_handlers( a_receiver_ptr );
 
         return;
     }
 
-    uint32_t daq_control::status_to_uint( status a_status )
+    uint32_t run_control::status_to_uint( status a_status )
     {
         return static_cast< uint32_t >( a_status );
     }
-    daq_control::status daq_control::uint_to_status( uint32_t a_value )
+    run_control::status run_control::uint_to_status( uint32_t a_value )
     {
         return static_cast< status >( a_value );
     }
-    std::string daq_control::interpret_status( status a_status )
+    std::string run_control::interpret_status( status a_status )
     {
         switch( a_status )
         {

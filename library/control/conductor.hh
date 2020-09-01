@@ -1,12 +1,12 @@
 /*
- * mt_run_server.hh
+ * conductor.hh
  *
  *  Created on: May 6, 2015
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
-#ifndef SANDFLY_RUN_SERVER_HH_
-#define SANDFLY_RUN_SERVER_HH_
+#ifndef SANDFLY_CONDUCTOR_HH_
+#define SANDFLY_CONDUCTOR_HH_
 
 //#include "mt_version.hh"
 
@@ -27,28 +27,30 @@ namespace scarab
 namespace sandfly
 {
     class batch_executor;
-    class daq_control;
+    class run_control;
     class request_receiver;
     class stream_manager;
 
     /*!
-     @class run_server
-     @author N. S. Oblath
+     @class conductor
+     @author N.S. Oblath
 
-     @brief Sets up daq_control, strea_manager and request_receiver. Registers request handles.
+     @brief Sets up all control classes.  Registers request handlers.  Coordinates threads.
 
      @details
-     A run_server instance is created by the DAQ executable. The executable calls run_server.execute() and waits for it's return.
-     In execute(), run_server creates new instances of daq_control, stream_manager and request_receiver.
+     The conductor is responsible for coordinating all actions in sandfly.
+     Control classes managed by the conductor include batch_executor, run_control, request_receiver, and stream_manager.
+     A conductor instance is created by the executable. The executable calls conductor.execute() and waits for it's return.
+     In execute(), conductor creates new instances of run_control, stream_manager and request_receiver.
      It also adds set, get and cmd request handlers by registering handlers with the request_receiver.
-     Then it calls daq_control.execute and request_receiver.execute in 2 separate threads.
-     run_server.execute() only returns when all threads were joined.
+     Then it calls run_control.execute and request_receiver.execute in 2 separate threads.
+     conductor.execute() only returns when all threads are joined.
      */
-    class run_server : public scarab::cancelable
+    class conductor : public scarab::cancelable
     {
         public:
-            run_server();
-            virtual ~run_server();
+            conductor();
+            virtual ~conductor();
 
             void execute( const scarab::param_node& a_config );
 
@@ -70,7 +72,7 @@ namespace sandfly
             std::shared_ptr< request_receiver > f_request_receiver;
             std::shared_ptr< batch_executor > f_batch_executor;
             //std::shared_ptr< daq_worker > f_daq_worker;
-            std::shared_ptr< daq_control > f_daq_control;
+            std::shared_ptr< run_control > f_run_control;
             std::shared_ptr< stream_manager > f_stream_manager;
 
             std::mutex f_component_mutex;
@@ -95,22 +97,22 @@ namespace sandfly
 
     };
 
-    inline int run_server::get_return() const
+    inline int conductor::get_return() const
     {
         return f_return;
     }
 
-    inline run_server::status run_server::get_status() const
+    inline conductor::status conductor::get_status() const
     {
         return f_status.load();
     }
 
-    inline void run_server::set_status( status a_status )
+    inline void conductor::set_status( status a_status )
     {
         f_status.store( a_status );
         return;
     }
 
-} /* namespace mantis */
+} /* namespace sandfly */
 
-#endif /* SERVER_MT_RUN_SERVER_HH_ */
+#endif /* SANDFLY_CONDUCTOR_HH_ */

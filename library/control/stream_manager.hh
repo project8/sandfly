@@ -33,7 +33,7 @@ namespace sandfly
      With initialization, stream_manager is given the node configurations set for the currently running sandfly instance.
      A stream is added for every configured set of midge nodes.
      For every node in a node config an instance of the nodes builder class is created.
-     daq_control activate-daq calls reset_midge in stream_manager.
+     run_control activate-daq calls reset_midge in stream_manager.
      reset_midge makes fresh copies of the configured node classes and the node binding classes and adds the classes and all the node connections to the midge object.
      The node binding classes allow access to the nodes held and owned by midge.
      Via the node binding classes some node configurations can be changed while the daq is activated.
