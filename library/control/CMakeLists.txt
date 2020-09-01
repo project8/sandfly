@@ -35,11 +35,10 @@ set( dependencies
     SandflyUtility
 )
 
+
 ###########
 # library #
 ###########
-
-midge_library( SandflyControl sources dependencies )
 
 pbuilder_library(
     TARGET SandflyControl
