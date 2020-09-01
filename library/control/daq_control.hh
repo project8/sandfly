@@ -25,6 +25,7 @@
 namespace sandfly
 {
     class message_relayer;
+    class request_receiver;
 
     /*!
      @class daq_control
@@ -139,27 +140,31 @@ namespace sandfly
             bool run_command( const std::string& a_node_name, const std::string& a_cmd, const scarab::param_node& a_args );
 
         public:
-            dripline::reply_ptr_t handle_activate_daq_control( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_reactivate_daq_control( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_deactivate_daq_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_activate_daq_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_reactivate_daq_control( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_deactivate_daq_control( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_start_run_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_start_run_request( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_stop_run_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_stop_run_request( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_apply_config_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_dump_config_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_run_command_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_apply_config_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_dump_config_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_run_command_request( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_set_duration_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_set_duration_request( const dripline::request_ptr_t a_request );
 
-            dripline::reply_ptr_t handle_get_status_request( const dripline::request_ptr_t a_request );
-            dripline::reply_ptr_t handle_get_duration_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_get_status_request( const dripline::request_ptr_t a_request );
+            virtual dripline::reply_ptr_t handle_get_duration_request( const dripline::request_ptr_t a_request );
+
+            void register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr );
 
         private:
             void do_cancellation( int a_code );
 
             void do_run( unsigned a_duration );
+
+            virtual void derived_register_handlers( std::shared_ptr< request_receiver > ) {}
 
             std::condition_variable f_activation_condition;
             std::mutex f_daq_mutex;

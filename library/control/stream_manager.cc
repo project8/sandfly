@@ -430,7 +430,7 @@ namespace sandfly
     {
         if( ! a_request->payload().is_node() || ! a_request->payload().as_node().has( "name" ) || ! a_request->payload().as_node().has( "config" ) )
         {
-            return a_request->reply( dripline::dl_message_error_bad_payload(), "Add-stream request is missing either \"name\" or \"config\"" );
+            return a_request->reply( dripline::dl_service_error_bad_payload(), "Add-stream request is missing either \"name\" or \"config\"" );
         }
 
         try
@@ -449,16 +449,16 @@ namespace sandfly
     {
         if( ! a_request->payload().is_node() || ! a_request->payload().as_node().has( "values" ) )
         {
-            return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform remove-stream: values array is missing" );
+            return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform remove-stream: values array is missing" );
         }
         if( ! a_request->payload()["values"].is_array() )
         {
-            return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform remove-stream: values must be an array" );
+            return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform remove-stream: values must be an array" );
         }
         const param_array t_values_array = a_request->payload()["values"].as_array();
         if( t_values_array.empty() || ! t_values_array[0].is_value() )
         {
-            return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform remove-stream: \"values\" is not an array, or the array is empty, or the first element in the array is not a value" );
+            return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform remove-stream: \"values\" is not an array, or the array is empty, or the first element in the array is not a value" );
         }
 
         try
@@ -477,7 +477,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: node-config.[stream].[node] or node-config.[stream].[node].[parameter]" );
+            return a_request->reply( dripline::dl_service_error_invalid_key(), "Specifier is improperly formatted: node-config.[stream].[node] or node-config.[stream].[node].[parameter]" );
         }
 
         //size_t t_rks_size = a_request->parsed_rks().size();
@@ -498,7 +498,7 @@ namespace sandfly
 
             if( ! a_request->payload().is_node() || a_request->payload().as_node().empty() )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform node-config request: payload is empty" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform node-config request: payload is empty" );
             }
 
             param_node& t_req_payload = a_request->payload().as_node();
@@ -510,7 +510,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform node-config request: ") + e.what() );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform node-config request: ") + e.what() );
             }
         }
         else
@@ -520,19 +520,19 @@ namespace sandfly
 
             if( ! a_request->payload().is_node() || ! a_request->payload().as_node().has( "values" ) )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform node-config (single value): values array is missing" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform node-config (single value): values array is missing" );
             }
 
             param_node& t_req_payload = a_request->payload().as_node();
 
             if( ! t_req_payload["values"].is_array() )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform node-config (single value): values entry is not an array" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform node-config (single value): values entry is not an array" );
             }
             const param_array t_values_array = t_req_payload["values"].as_array();
             if( t_values_array.empty() || ! t_values_array[0]().is_value() )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform node-config (single value): \"values\" is not an array, or the array is empty, or the first element in the array is not a value" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform node-config (single value): \"values\" is not an array, or the array is empty, or the first element in the array is not a value" );
             }
 
             param_node t_param_to_set;
@@ -545,7 +545,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform node-config request (single value): ") + e.what() );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform node-config request (single value): ") + e.what() );
             }
         }
 
@@ -557,7 +557,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "RKS is improperly formatted: [queue].node-config.[stream].[node] or [queue].node-config.[stream].[node].[parameter]" );
+            return a_request->reply( dripline::dl_service_error_invalid_key(), "RKS is improperly formatted: [queue].node-config.[stream].[node] or [queue].node-config.[stream].[node].[parameter]" );
         }
 
         //size_t t_rks_size = a_request->parsed_rks().size();
@@ -581,7 +581,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform get-node-config request: ") + e.what() );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform get-node-config request: ") + e.what() );
             }
         }
         else
@@ -597,13 +597,13 @@ namespace sandfly
                 _dump_node_config( t_target_stream, t_target_node, t_param_dump );
                 if( ! t_param_dump.has( t_param_to_get ) )
                 {
-                    return a_request->reply( dripline::dl_message_error_invalid_key(), "Unable to get node parameter: cannot find parameter <" + t_param_to_get + ">" );
+                    return a_request->reply( dripline::dl_service_error_invalid_key(), "Unable to get node parameter: cannot find parameter <" + t_param_to_get + ">" );
                 }
                 t_payload.add( t_param_to_get, param_value( t_param_dump[t_param_to_get]() ) );
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to get node parameter (single value): ") + e.what() );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to get node parameter (single value): ") + e.what() );
             }
         }
 
@@ -615,7 +615,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() > 1 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: node-config.[stream]" );
+            return a_request->reply( dripline::dl_service_error_invalid_key(), "Specifier is improperly formatted: node-config.[stream]" );
         }
 
         param_array t_streams_list;
@@ -632,7 +632,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform get-stream-list request: ") + e.what() );
+            return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform get-stream-list request: ") + e.what() );
         }
         LDEBUG( plog, "Get-stream-list was successful" );
         return a_request->reply( dripline::dl_success(), "Performed get-stream-list", std::move( t_payload_ptr ) );
@@ -642,7 +642,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 1 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: node-list.[stream]" );
+            return a_request->reply( dripline::dl_service_error_invalid_key(), "Specifier is improperly formatted: node-list.[stream]" );
         }
 
         std::string t_target_stream = a_request->parsed_specifier().front();
@@ -650,7 +650,7 @@ namespace sandfly
 
         if( !f_streams.count( t_target_stream ) )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: node-list.[stream]" );
+            return a_request->reply( dripline::dl_service_error_invalid_key(), "Specifier is improperly formatted: node-list.[stream]" );
         }
         stream_manager::stream_template::nodes_t* t_these_nodes = &(f_streams[ t_target_stream ].f_nodes);
 
@@ -668,7 +668,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform get-stream-node-list request: ") + e.what() );
+            return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform get-stream-node-list request: ") + e.what() );
         }
         LDEBUG( plog, "Get-stream-node-list was successful" );
         return a_request->reply( dripline::dl_success(), "Performed get-stream-node-list", std::move(t_payload_ptr) );

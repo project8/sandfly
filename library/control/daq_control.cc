@@ -9,12 +9,15 @@
 
 #include "message_relayer.hh"
 #include "node_builder.hh"
+#include "request_receiver.hh"
 
 #include "diptera.hh"
 #include "midge_error.hh"
 
 #include "logger.hh"
 #include "signal_handler.hh"
+
+#include "return_codes.hh"
 
 #include <chrono>
 #include <condition_variable>
@@ -50,7 +53,6 @@ namespace sandfly
             f_run_return(),
             f_msg_relay( message_relayer::get_instance() ),
             f_run_duration( 1000 ),
-            f_use_monarch( true ),
             f_status( status::deactivated )
     {
         // DAQ config is optional; defaults will work just fine
@@ -584,7 +586,7 @@ namespace sandfly
         }
         catch( error& e )
         {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to activate DAQ control: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to activate DAQ control: " ) + e.what() );
         }
     }
 
@@ -597,7 +599,7 @@ namespace sandfly
         }
         catch( error& e )
         {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to reactivate DAQ control: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to reactivate DAQ control: " ) + e.what() );
         }
     }
 
@@ -610,7 +612,7 @@ namespace sandfly
         }
         catch( error& e )
         {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to deactivate DAQ control: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to deactivate DAQ control: " ) + e.what() );
         }
     }
 
@@ -618,40 +620,13 @@ namespace sandfly
     {
         try
         {
-            if( a_request->payload().is_node() )
-            {
-                param_node& t_payload = a_request->payload().as_node();
-                if( t_payload.has( "filename" ) ) set_filename( t_payload["filename"]().as_string(), 0 );
-                //TODO BUG here, if filenames exists but is not an array (only case i tried), this causes a seg fault which is not handled below
-                if( t_payload.as_node().has( "filenames" ) )
-                {
-                    const scarab::param_array t_filenames = t_payload["filenames"].as_array();
-                    for( unsigned i_fn = 0; i_fn < t_filenames.size(); ++i_fn )
-                    {
-                        set_filename( t_filenames[i_fn]().as_string(), i_fn );
-                    }
-                }
-
-                if( t_payload.has( "description" ) ) set_description( t_payload["description"]().as_string(), 0 );
-                if( t_payload.has( "descriptions" ) )
-                {
-                    const scarab::param_array t_descriptions = t_payload["descriptions"].as_array();
-                    for( unsigned i_fn = 0; i_fn < t_descriptions.size(); ++i_fn )
-                    {
-                        set_description( t_descriptions[i_fn]().as_string(), i_fn );
-                    }
-                }
-
-                f_run_duration = a_request->payload().get_value( "duration", f_run_duration );
-            }
-
             start_run();
             return a_request->reply( dripline::dl_success(), "Run started" );
         }
         catch( std::exception& e )
         {
             LWARN( plog, "there was an error starting a run" );
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to start run: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to start run: " ) + e.what() );
         }
     }
 
@@ -664,7 +639,7 @@ namespace sandfly
         }
         catch( error& e )
         {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to stop run: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to stop run: " ) + e.what() );
         }
     }
 
@@ -672,7 +647,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: active-config.[stream].[node] or node-config.[stream].[node].[parameter]" );
+            return a_request->reply( dripline::dl_service_error_invalid_method(), "Specifier is improperly formatted: active-config.[stream].[node] or node-config.[stream].[node].[parameter]" );
         }
 
         //size_t t_rks_size = a_request->parsed_rks().size();
@@ -693,7 +668,7 @@ namespace sandfly
 
             if( ! a_request->payload().is_node() || a_request->payload().as_node().empty() )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform active-config request: payload is empty" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform active-config request: payload is empty" );
             }
 
             try
@@ -703,7 +678,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform node-config request: ") + e.what() );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform node-config request: ") + e.what() );
             }
         }
         else
@@ -713,7 +688,7 @@ namespace sandfly
 
             if( ! a_request->payload().is_node() || ! a_request->payload().as_node().has( "values" ) )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform active-config (single value): values array is missing" );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform active-config (single value): values array is missing" );
             }
             scarab::param_array t_values_array;
             if ( a_request->payload().as_node().has("values") ) {
@@ -721,7 +696,7 @@ namespace sandfly
             }
             if( t_values_array.empty() || ! t_values_array[0].is_value() )
             {
-                return a_request->reply( dripline::dl_message_error_bad_payload(), "Unable to perform active-config (single value): \"values\" is not an array, or the array is empty, or the first element in the array is not a value", std::move(t_payload_ptr) );
+                return a_request->reply( dripline::dl_service_error_bad_payload(), "Unable to perform active-config (single value): \"values\" is not an array, or the array is empty, or the first element in the array is not a value", std::move(t_payload_ptr) );
             }
 
             scarab::param_node t_param_to_set;
@@ -734,7 +709,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform active-config request (single value): ") + e.what(), std::move(t_payload_ptr) );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform active-config request (single value): ") + e.what(), std::move(t_payload_ptr) );
             }
         }
 
@@ -746,7 +721,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "Specifier is improperly formatted: active-config.[stream].[node] or active-config.[stream].[node].[parameter]" );
+            return a_request->reply( dripline::dl_service_error_invalid_specifier(), "Specifier is improperly formatted: active-config.[stream].[node] or active-config.[stream].[node].[parameter]" );
         }
 
         //size_t t_rks_size = a_request->parsed_rks().size();
@@ -771,7 +746,7 @@ namespace sandfly
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform get-active-config request: ") + e.what(), std::move(t_payload_ptr) );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform get-active-config request: ") + e.what(), std::move(t_payload_ptr) );
             }
         }
         else
@@ -787,13 +762,13 @@ namespace sandfly
                 dump_config( t_target_node, t_param_dump );
                 if( ! t_param_dump.has( t_param_to_get ) )
                 {
-                    return a_request->reply( dripline::dl_message_error_invalid_key(), "Unable to get active-node parameter: cannot find parameter <" + t_param_to_get + ">" );
+                    return a_request->reply( dripline::dl_service_error_invalid_key(), "Unable to get active-node parameter: cannot find parameter <" + t_param_to_get + ">" );
                 }
                 t_payload.add( t_param_to_get, t_param_dump[t_param_to_get]() );
             }
             catch( std::exception& e )
             {
-                return a_request->reply( dripline::dl_device_error(), std::string("Unable to get active-node parameter (single value): ") + e.what(), std::move(t_payload_ptr) );
+                return a_request->reply( dripline::dl_service_error(), std::string("Unable to get active-node parameter (single value): ") + e.what(), std::move(t_payload_ptr) );
             }
         }
 
@@ -805,7 +780,7 @@ namespace sandfly
     {
         if( a_request->parsed_specifier().size() < 2 )
         {
-            return a_request->reply( dripline::dl_message_error_invalid_key(), "RKS is improperly formatted: run-command.[stream].[node].[command]" );
+            return a_request->reply( dripline::dl_service_error_invalid_specifier(), "RKS is improperly formatted: run-command.[stream].[node].[command]" );
         }
 
         //size_t t_rks_size = a_request->parsed_rks().size();
@@ -836,7 +811,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            return a_request->reply( dripline::dl_device_error(), std::string("Unable to perform run-command request: ") + e.what(), std::move(t_payload_ptr) );
+            return a_request->reply( dripline::dl_service_error(), std::string("Unable to perform run-command request: ") + e.what(), std::move(t_payload_ptr) );
         }
 
         if( t_return )
@@ -847,7 +822,7 @@ namespace sandfly
         else
         {
             LWARN( plog, "Active run-command execution failed" );
-            return a_request->reply( dripline::dl_message_error_invalid_method(), "Command was not recognized", std::move(t_payload_ptr) );
+            return a_request->reply( dripline::dl_service_error_invalid_method(), "Command was not recognized", std::move(t_payload_ptr) );
         }
     }
 
@@ -867,7 +842,7 @@ namespace sandfly
         }
         catch( std::exception& e )
         {
-            return a_request->reply( dripline::dl_device_error(), string( "Unable to set duration: " ) + e.what() );
+            return a_request->reply( dripline::dl_service_error(), string( "Unable to set duration: " ) + e.what() );
         }
     }
 
@@ -895,6 +870,35 @@ namespace sandfly
         t_payload_ptr->as_node().add( "values", t_values_array );
 
         return a_request->reply( dripline::dl_success(), "Duration request completed", std::move(t_payload_ptr) );
+    }
+
+    void daq_control::register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr )
+    {
+        using namespace std::placeholders;
+
+        // set the run request handler
+        a_receiver_ptr->set_run_handler( std::bind( &daq_control::handle_start_run_request, this, _1 ) );
+
+        // add get request handlers
+        a_receiver_ptr->register_get_handler( "active-config", std::bind( &daq_control::handle_dump_config_request, this, _1 ) );
+        a_receiver_ptr->register_get_handler( "daq-status", std::bind( &daq_control::handle_get_status_request, this, _1 ) );
+        a_receiver_ptr->register_get_handler( "duration", std::bind( &daq_control::handle_get_duration_request, this, _1 ) );
+
+        // add set request handlers
+        a_receiver_ptr->register_set_handler( "active-config", std::bind( &daq_control::handle_apply_config_request, this, _1 ) );
+        a_receiver_ptr->register_set_handler( "duration", std::bind( &daq_control::handle_set_duration_request, this, _1 ) );
+
+        // add cmd request handlers
+        a_receiver_ptr->register_cmd_handler( "run-daq-cmd", std::bind( &daq_control::handle_run_command_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "stop-run", std::bind( &daq_control::handle_stop_run_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "start-run", std::bind( &daq_control::handle_start_run_request, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "activate-daq", std::bind( &daq_control::handle_activate_daq_control, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "reactivate-daq", std::bind( &daq_control::handle_reactivate_daq_control, this, _1 ) );
+        a_receiver_ptr->register_cmd_handler( "deactivate-daq", std::bind( &daq_control::handle_deactivate_daq_control, this, _1 ) );
+
+        this->derived_register_handlers( a_receiver_ptr );
+
+        return;
     }
 
     uint32_t daq_control::status_to_uint( status a_status )
