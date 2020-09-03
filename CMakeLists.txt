@@ -58,3 +58,12 @@ pbuilder_add_submodule( Dripline dripline-cpp )
 
 # build the sandfly libraries
 add_subdirectory( library )
+
+
+###############
+# executables #
+###############
+
+if( PBUILDER_STANDALONE AND Sandfly_ENABLE_EXECUTABLES )
+    add_subdirectory( executables )
+endif()
