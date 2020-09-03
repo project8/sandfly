@@ -2,13 +2,18 @@
  * server_config.hh
  *
  *  Created on: Nov 4, 2013
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
 #ifndef SANDFLY_SERVER_CONFIG_HH_
 #define SANDFLY_SERVER_CONFIG_HH_
 
 #include "param.hh"
+
+namespace scarab
+{
+    class main_app;
+}
 
 namespace sandfly
 {
@@ -39,5 +44,9 @@ namespace sandfly
             virtual ~server_config();
     };
 
+    /// Add basic AMQP options to an app object
+    void add_sandfly_options( scarab::main_app& an_app );
+
 } /* namespace sandfly */
+
 #endif /* SANDFLY_SERVER_CONFIG_HH_ */

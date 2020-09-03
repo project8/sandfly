@@ -65,7 +65,7 @@ namespace sandfly
             // dripline relayer
             try
             {
-                message_relayer* t_msg_relay = message_relayer::create_instance( a_config["amqp"].as_node() );
+                message_relayer* t_msg_relay = message_relayer::create_instance( a_config["dripline"].as_node() );
                 if( a_config["post-to-slack"]().as_bool() )
                 {
                     LDEBUG( plog, "Starting message relayer thread" );

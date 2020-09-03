@@ -7,7 +7,7 @@
 
 #include "sandfly_version.hh"
 
-#include "logger.hh" // for TOSTRING macro
+#include "macros.hh" // for TOSTRING macro
 
 namespace sandfly
 {

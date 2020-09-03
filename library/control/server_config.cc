@@ -2,14 +2,18 @@
  * server_config.cc
  *
  *  Created on: Nov 4, 2013
- *      Author: nsoblath
+ *      Author: N.S. Oblath
  */
 
 #include "server_config.hh"
 #include "logger.hh"
 #include "sandfly_error.hh"
 
+// dripline
+#include "dripline_config.hh"
+
 //scarab
+#include "application.hh"
 #include "path.hh"
 
 #include<string>
@@ -29,29 +33,7 @@ namespace sandfly
     {
         // default server configuration
 
-        param_node t_amqp_node = param_node();
-        t_amqp_node.add( "broker", "localhost" );
-        t_amqp_node.add( "queue", "sandfly" );
-        t_amqp_node.add( "slack-queue", "slack_interface" );
-        //add logic for default auth file if it exists
-        scarab::path t_auth_default_path = scarab::expand_path( "~/.project8_authentications.json" );
-        if ( boost::filesystem::exists( t_auth_default_path ) )
-        {
-            LDEBUG( plog, "default auth file found, setting that as initial value" << t_auth_default_path.string() );
-            t_amqp_node.add( "auth-file", t_auth_default_path.string() );
-        }
-        else
-        {
-            LDEBUG( plog, "default auth file <" << t_auth_default_path.string() << "> does not exist, not setting" );
-        }
-
-        // other available values
-        // - auth-file
-        // - requests-exchange
-        // - alerts-exchange
-        // - listen-timeout-ms
-        // - broker-port
-        add( "amqp", t_amqp_node );
+        add( "dripline", dripline::dripline_config() );
 
         add( "post-to-slack", false );
 
@@ -104,5 +86,20 @@ namespace sandfly
     server_config::~server_config()
     {
     }
+
+
+    void add_sandfly_options( scarab::main_app& an_app )
+    {
+        dripline::add_dripline_options( an_app );
+
+        an_app.add_config_flag< bool >( "--post-to-slack", "post-to-slack", "Flag for en/disabling posting to Slack" );
+        an_app.add_config_flag< bool >( "--activate-at-startup", "daq.activate-at-startup", "Flag to make Psyllid activate on startup" );
+        an_app.add_config_option< unsigned >( "-n,--n-files", "daq.n-files", "Number of files to be written in parallel" );
+        an_app.add_config_option< unsigned >( "-d,--duration", "daq.duration", "Run duration in ms" );
+        an_app.add_config_option< double >( "-m,--max-file-size-mb", "daq.max-file-size-mb", "Maximum file size in MB" );
+
+        return;
+    }
+
 
 } /* namespace sandfly */

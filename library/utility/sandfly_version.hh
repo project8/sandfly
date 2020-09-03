@@ -8,7 +8,7 @@
 #ifndef SANDFLY_VERSION_HH_
 #define SANDFLY_VERSION_HH_
 
-#include "dripline_version.hh"
+#include "version_semantic.hh"
 
 namespace sandfly
 {
