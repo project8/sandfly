@@ -157,7 +157,7 @@ namespace sandfly
 
             void register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr );
 
-        private:
+        protected:
             void do_cancellation( int a_code );
 
             void do_run( unsigned a_duration );
@@ -206,7 +206,7 @@ namespace sandfly
             status get_status() const;
             void set_status( status a_status );
 
-        private:
+        protected:
             std::atomic< status > f_status;
 
 
