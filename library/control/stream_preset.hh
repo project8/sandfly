@@ -99,7 +99,7 @@ namespace sandfly
 
 
 #define DECLARE_PRESET( preset_class ) \
-	class preset_class : public stream_preset \
+	class preset_class : public ::sandfly::stream_preset \
     { \
         public: \
     		preset_class( const std::string& a_type ); \
