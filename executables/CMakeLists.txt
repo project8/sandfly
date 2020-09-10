@@ -3,25 +3,18 @@
 # Created: Sept. 2, 2020
 ##########
 
-set( sandfly_exe_SOURCES
-    sandfly.cc
-)
-
-set( sandfly_exe_LIBS 
-    SandflyControl
-    SandflyUtility
-)
-
-
+# Why the setup with sandfly_exe_PROGRAMS set as empty here, then appended to?
+# This follows the pattern of how other packages in the Project 8 codebase are setup, 
+# and it will be useful if there are other executables in the future.
 set( sandfly_exe_PROGRAMS )
-pbuilder_executables( 
-    SOURCES ${sandfly_exe_SOURCES}
-    TARGETS_VAR sandfly_exe_PROGRAMS
-    PROJECT_LIBRARIES ${sandfly_exe_LIBS}
-    #PUBLIC_EXTERNAL_LIBRARIES ${PUBLIC_EXT_LIBS}
-    #PRIVATE_EXTERNAL_LIBRARIES ${PRIVATE_EXT_LIBS}
-)
 
+# Sandfly executable
+build_sandfly_executable()
+
+list( APPEND sandfly_exe_PROGRAMS sandfly )
+
+
+# Export
 pbuilder_component_install_and_export( 
     COMPONENT Executables
     EXETARGETS ${sandfly_exe_PROGRAMS}

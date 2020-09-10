@@ -64,6 +64,6 @@ add_subdirectory( library )
 # executables #
 ###############
 
-if( PBUILDER_STANDALONE AND Sandfly_ENABLE_EXECUTABLES )
+if( Sandfly_ENABLE_EXECUTABLES )
     add_subdirectory( executables )
 endif()
