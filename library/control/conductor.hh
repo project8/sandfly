@@ -63,10 +63,15 @@ namespace sandfly
             dripline::reply_ptr_t handle_stop_all_request( const dripline::request_ptr_t a_request );
             dripline::reply_ptr_t handle_quit_server_request( const dripline::request_ptr_t a_request );
 
+            template< typename rc_type = run_control >
+            void set_rc_creator();
+
         private:
             virtual void do_cancellation( int a_code );
 
             int f_return;
+
+            std::function< std::shared_ptr< run_control >(const scarab::param_node&, std::shared_ptr< stream_manager >) > f_rc_creator;
 
             // component pointers for asynchronous access
             std::shared_ptr< request_receiver > f_request_receiver;
@@ -96,6 +101,15 @@ namespace sandfly
             std::atomic< status > f_status;
 
     };
+
+    template< typename rc_type >
+    void conductor::set_rc_creator()
+    {
+        f_rc_creator = []( const scarab::param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr )->std::shared_ptr< run_control >{ 
+            return std::make_shared< rc_type >( a_master_config, a_mgr ); 
+        };
+        return;
+    }
 
     inline int conductor::get_return() const
     {

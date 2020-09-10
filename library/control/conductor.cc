@@ -32,6 +32,7 @@ namespace sandfly
     conductor::conductor() :
             scarab::cancelable(),
             f_return( RETURN_SUCCESS ),
+            f_rc_creator(),
             f_request_receiver(),
             f_batch_executor(),
             f_run_control(),
@@ -39,6 +40,7 @@ namespace sandfly
             f_component_mutex(),
             f_status( k_initialized )
     {
+        set_rc_creator< run_control >();
     }
 
     conductor::~conductor()
