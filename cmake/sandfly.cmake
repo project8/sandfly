@@ -9,17 +9,21 @@ message( STATUS "sandfly dir: ${SANDFLY_SOURCE_DIR}" )
 list( APPEND CMAKE_MODULE_PATH ${SANDFLY_SOURCE_DIR}/midge/scarab/cmake )
 include( PackageBuilder )
 
+list( APPEND CMAKE_MODULE_PATH ${SANDFLY_SOURCE_DIR}/midge/cmake )
+include( MidgeUtility )
+
+
 function( build_sandfly_executable )
 	# Builds a the sandfly executable
 	#
 	# User is responsible for including the resulting executable in a target export.
     #
     # Parameters
-	#     SANDFLY_SUBMODULE_NAME: libraries to be linked against
-	#     ALT_NAME: 
-	#     ALT_SOURCES: 
-	#     PROJECT_LIBRARIES: 
-	#     EXTERNAL_LIBRARIES: 
+	#     SANDFLY_SUBMODULE_NAME: libraries to be linked against; only used if sandfly is a submodule of a parent project (the typical use case)
+	#     ALT_NAME: name for the executable, only needed if something other than "sandfly" is desired
+	#     ALT_SOURCES: source file for the executable, only needed if something other than "sandfly.cc" is desired
+	#     PROJECT_LIBRARIES: if building from a parent project, this should be the set of targets in the parent project to link against this executable
+	#     EXTERNAL_LIBRARIES: if there are external libraries to link against this article, they should be specified here
 	#
 
 	set( OPTIONS )
