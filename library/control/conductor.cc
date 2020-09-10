@@ -70,10 +70,16 @@ namespace sandfly
                 message_relayer* t_msg_relay = message_relayer::create_instance( a_config["dripline"].as_node() );
                 if( a_config["post-to-slack"]().as_bool() )
                 {
+                    t_msg_relay->set_use_relayer( true );
                     LDEBUG( plog, "Starting message relayer thread" );
                     t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, t_msg_relay );
                     t_msg_relay->slack_notice( "Sandfly is starting up" );
                 }
+                else
+                {
+                    LDEBUG( plog, "Message relayer disabled" );
+                }
+                
             }
             catch(...)
             {
@@ -84,9 +90,17 @@ namespace sandfly
             LDEBUG( plog, "Creating stream manager" );
             f_stream_manager.reset( new stream_manager() );
 
-            // daq control
-            LDEBUG( plog, "Creating DAQ control" );
-            f_run_control.reset( new run_control( a_config, f_stream_manager ) );
+            // run control
+            if( ! f_run_control )
+            {
+                LDEBUG( plog, "Creating run control" );
+                f_run_control = f_rc_creator( a_config, f_stream_manager ); //.reset( new run_control( a_config, f_stream_manager ) );
+            }
+            else
+            {
+                LDEBUG( plog, "Using existing run control" );
+            }
+            
             // provide the pointer to the run_control to control_access
             control_access::set_run_control( f_run_control );
             f_run_control->initialize();

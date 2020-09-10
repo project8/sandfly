@@ -33,6 +33,7 @@ namespace sandfly
             void slack_critical( const std::string& a_msg_text ) const;
 
             mv_referrable( std::string, queue_name );
+            mv_accessible( bool, use_relayer );
     };
 
 } /* namespace sandfly */
