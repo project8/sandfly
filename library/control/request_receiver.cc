@@ -3,7 +3,7 @@
 #include "request_receiver.hh"
 #include "dripline_constants.hh"
 
-#include "sandfly_constants.hh"
+#include "sandfly_return_codes.hh"
 #include "sandfly_error.hh"
 
 #include "logger.hh"
@@ -132,7 +132,7 @@ namespace sandfly
             dripline::reply_ptr_t t_reply_ptr = submit_request_message( t_request );
             return a_request->reply( t_reply_ptr->get_return_code(), t_reply_ptr->return_message(), param_ptr_t(new param_node(t_reply_ptr->payload().as_node())) );
         }
-        return a_request->reply( dl_daq_error(), "set condition not configured" );
+        return a_request->reply( dl_sandfly_error(), "set condition not configured" );
     }
 
 }

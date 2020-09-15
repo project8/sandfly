@@ -9,13 +9,13 @@ include_directories( BEFORE
 set( headers
     locked_resource.hh
     message_relayer.hh
-    sandfly_constants.hh
+    sandfly_return_codes.hh
     sandfly_error.hh
     sandfly_version.hh
 )
 set( sources
     message_relayer.cc
-    sandfly_constants.cc
+    sandfly_return_codes.cc
     sandfly_error.cc
 )
 

@@ -8,7 +8,7 @@
 //sandfly includes
 #include "batch_executor.hh"
 #include "run_control.hh"
-#include "sandfly_constants.hh"
+#include "sandfly_return_codes.hh"
 #include "request_receiver.hh"
 
 //non-sandfly P8 includes
@@ -131,7 +131,7 @@ namespace sandfly
         }
         catch( dripline::dripline_error& e )
         {
-            return a_request->reply( dl_daq_error(), std::string("Error processing command: ") + e.what() );
+            return a_request->reply( dl_sandfly_error(), std::string("Error processing command: ") + e.what() );
         }
         return a_request->reply( dripline::dl_success(), "" );
     }
@@ -146,7 +146,7 @@ namespace sandfly
         }
         catch( dripline::dripline_error& e )
         {
-            return a_request->reply( dl_daq_error(), std::string("Error processing command: ") + e.what() );
+            return a_request->reply( dl_sandfly_error(), std::string("Error processing command: ") + e.what() );
         }
         return a_request->reply( dripline::dl_success(), "" );
     }
