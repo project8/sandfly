@@ -1,0 +1,31 @@
+/*
+ * sandfly_version.cc
+ *
+ *  Created on: Mar 21, 2014
+ *      Author: N.S. Oblath
+ */
+
+#include "sandfly_version.hh"
+
+#include "macros.hh" // for TOSTRING macro
+
+namespace sandfly
+{
+    version::version() :
+            scarab::version_semantic()
+    {
+        f_major_ver = @Sandfly_VERSION_MAJOR@;
+        f_minor_ver = @Sandfly_VERSION_MINOR@;
+        f_patch_ver = @Sandfly_VERSION_PATCH@;
+        f_version = TOSTRING(@Sandfly_VERSION@);
+        f_package = TOSTRING(@Sandfly_PACKAGE_NAME@);
+        f_commit = TOSTRING(@Sandfly_GIT_COMMIT@);
+    }
+
+    version::~version()
+    {
+    }
+
+} /* namespace sandfly */
+
+
