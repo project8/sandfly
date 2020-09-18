@@ -1,0 +1,16 @@
+# SandflyConfig.cmake
+
+get_filename_component( Sandfly_CMAKE_DIR "${CMAKE_CURRENT_LIST_FILE}" PATH )
+
+include( CMakeFindDependencyMacro )
+find_dependency( Midge REQUIRED PATHS ${Sandfly_CMAKE_DIR}/Midge @Midge_BINARY_LOCATION@ )
+find_dependency( Dripline REQUIRED PATHS ${Sandfly_CMAKE_DIR}/Dripline @Dripline_BINARY_LOCATION@ )
+
+if( NOT TARGET Sandfly::@SandflyUtility_FULL_TARGET_NAME@ )
+    if( TARGET @SandflyUtility_FULL_TARGET_NAME@ )
+        add_library( Sandfly::@SandflyUtility_FULL_TARGET_NAME@ ALIAS @SandflyUtility_FULL_TARGET_NAME@ )
+        add_library( Sandfly::@SandflyControl_FULL_TARGET_NAME@ ALIAS @SandflyControl_FULL_TARGET_NAME@ )
+    else()
+        include("${Sandfly_CMAKE_DIR}/Sandfly_Library_Targets.cmake")
+    endif()
+endif()
