@@ -64,3 +64,11 @@ add_subdirectory( library )
 if( Sandfly_ENABLE_EXECUTABLES )
     add_subdirectory( executables )
 endif()
+
+##################
+# package config #
+##################
+
+configure_file( ${PROJECT_SOURCE_DIR}/SandflyConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/SandflyConfig.cmake @ONLY )
+
+pbuilder_do_package_config()
