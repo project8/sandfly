@@ -54,7 +54,6 @@ FROM sandfly_common as sandfly_done
 
 COPY dripline-cpp /tmp_source/dripline-cpp
 COPY midge /tmp_source/midge
-COPY monarch /tmp_source/monarch
 COPY source /tmp_source/source
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
 COPY .git /tmp_source/.git
