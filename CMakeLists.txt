@@ -3,13 +3,10 @@ cmake_minimum_required (VERSION 3.1)
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Sandfly VERSION 0.3.0 )
+project( Sandfly VERSION 0.4.0 )
 
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/midge/scarab/cmake )
-include( PackageBuilder )
-
-list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/midge/cmake )
-include( MidgeUtility )
+list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
+include( sandfly )
 
 pbuilder_prepare_project()
 
@@ -51,25 +48,27 @@ midge_process_options()
 add_definitions( -DDRIPLINE_AUTH_FILE=~/.project8_authentications.json )
 pbuilder_add_submodule( Dripline dripline-cpp )
 
-# Monarch
-pbuilder_add_submodule( Monarch monarch )
-# we need the definitions for HAS_ATTR_IFC and HAS_GRP_IFC from Monarch to use the proper class interfaces in M3Header and M3Stream
-set_property( DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR} APPEND PROPERTY COMPILE_DEFINITIONS ${Monarch_COMPILE_DEFINITIONS} )
-
 
 ###########
 # sandfly #
 ###########
 
-# add include directories
-include_directories( BEFORE
-    source/control
-    source/utility
-)
+# build the sandfly libraries
+add_subdirectory( library )
 
-# build this project
-add_subdirectory( source/utility )
-add_subdirectory( source/control )
 
-#add_subdirectory( source/applications )
-#add_subdirectory( source/test )
+###############
+# executables #
+###############
+
+if( Sandfly_ENABLE_EXECUTABLES )
+    add_subdirectory( executables )
+endif()
+
+##################
+# package config #
+##################
+
+configure_file( ${PROJECT_SOURCE_DIR}/SandflyConfig.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/SandflyConfig.cmake @ONLY )
+
+pbuilder_do_package_config()
