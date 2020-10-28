@@ -13,8 +13,8 @@ branches:
     - develop
     - master
     - /^v\d+\.\d+\.\d+(-S*)?$/
-    ## build any branch with a name ending in `/build` (not including the backticks)
-    - /^.*\/build$/
+    ## build any branch with a name ending in `build` (not including the backticks)
+    - /.*\.(?i:build)$/
 
 matrix:
   include:
