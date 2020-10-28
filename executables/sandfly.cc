@@ -6,7 +6,6 @@
  */
 
 #include "conductor.hh"
-#include "sandfly_constants.hh"
 #include "sandfly_error.hh"
 #include "sandfly_version.hh"
 #include "server_config.hh"
@@ -41,7 +40,7 @@ int main( int argc, char** argv )
         the_main.default_config() = server_config();
 
         // The main execution callback
-        the_main.callback( [&](){ the_conductor.execute( the_main.master_config() ); } );
+        the_main.callback( [&](){ the_conductor.execute( the_main.primary_config() ); } );
 
         // Command line options
         add_sandfly_options( the_main );
