@@ -38,7 +38,7 @@ namespace sandfly
 {
     LOGGER( plog, "run_control" );
 
-    run_control::run_control( const param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr ) :
+    run_control::run_control( const param_node& a_config, std::shared_ptr< stream_manager > a_mgr ) :
             scarab::cancelable(),
             control_access(),
             f_activation_condition(),
@@ -56,9 +56,9 @@ namespace sandfly
             f_status( status::deactivated )
     {
         // DAQ config is optional; defaults will work just fine
-        if( a_master_config.has( "daq" ) )
+        if( a_config.has( "daq" ) )
         {
-            f_daq_config.merge( a_master_config["daq"].as_node() );
+            f_daq_config.merge( a_config["daq"].as_node() );
         }
 
         set_run_duration( f_daq_config.get_value( "duration", get_run_duration() ) );

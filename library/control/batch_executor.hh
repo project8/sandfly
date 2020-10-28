@@ -59,7 +59,7 @@ namespace sandfly
     {
         public:
             batch_executor();
-            batch_executor( const scarab::param_node& a_master_config, std::shared_ptr< request_receiver > a_request_receiver );
+            batch_executor( const scarab::param_node& a_config, std::shared_ptr< request_receiver > a_request_receiver );
             virtual ~batch_executor();
 
             mv_referrable_const( scarab::param_node, batch_commands );

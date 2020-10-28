@@ -52,7 +52,7 @@ namespace sandfly
      - YES, activate on startup: run control must be in the "activated" state to be ready
      - NO, wait to activate: run control can be in the "deactivate," "activating,", or "activated" states to be ready
 
-     Settings that can be applied in the "daq" section of the master config:
+     Settings that can be applied in the "daq" section of the global config:
      - "duration" (integer): the duration of the next run in ms
      - "activate-at-startup" (boolean): whether or not the DAQ control is activated immediately on startup
      */
@@ -73,7 +73,7 @@ namespace sandfly
             };
 
         public:
-            run_control( const scarab::param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr );
+            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr );
             virtual ~run_control();
 
             /// Pre-execution initialization (call after setting the control_access pointer)

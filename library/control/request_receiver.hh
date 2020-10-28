@@ -35,7 +35,7 @@ namespace sandfly
     class request_receiver : public dripline::hub, public control_access
     {
         public:
-            request_receiver( const scarab::param_node& a_master_config );
+            request_receiver( const scarab::param_node& a_config );
             virtual ~request_receiver();
 
             void execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex );

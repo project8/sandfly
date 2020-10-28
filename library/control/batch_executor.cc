@@ -38,18 +38,18 @@ namespace sandfly
     {
     }
 
-    batch_executor::batch_executor( const scarab::param_node& a_master_config, std::shared_ptr< request_receiver > a_request_receiver ) :
+    batch_executor::batch_executor( const scarab::param_node& a_config, std::shared_ptr< request_receiver > a_request_receiver ) :
             control_access(),
             scarab::cancelable(),
-            f_batch_commands( a_master_config[ "batch-commands" ].as_node() ),
+            f_batch_commands( a_config[ "batch-commands" ].as_node() ),
             f_request_receiver( a_request_receiver ),
             f_action_queue(),
             f_condition_actions()
     {
-        if ( a_master_config.has( "on-startup" ) )
+        if ( a_config.has( "on-startup" ) )
         {
             LINFO( plog, "have an initial action array" );
-            add_to_queue( a_master_config["on-startup"].as_array() );
+            add_to_queue( a_config["on-startup"].as_array() );
         }
         else
         {

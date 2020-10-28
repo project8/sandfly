@@ -105,8 +105,8 @@ namespace sandfly
     template< typename rc_type >
     void conductor::set_rc_creator()
     {
-        f_rc_creator = []( const scarab::param_node& a_master_config, std::shared_ptr< stream_manager > a_mgr )->std::shared_ptr< run_control >{ 
-            return std::make_shared< rc_type >( a_master_config, a_mgr ); 
+        f_rc_creator = []( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr )->std::shared_ptr< run_control >{ 
+            return std::make_shared< rc_type >( a_config, a_mgr ); 
         };
         return;
     }
