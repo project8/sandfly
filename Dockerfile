@@ -52,10 +52,13 @@ WORKDIR /
 ########################
 FROM sandfly_common as sandfly_done
 
+COPY cmake /tmp_source/cmake
 COPY dripline-cpp /tmp_source/dripline-cpp
 COPY midge /tmp_source/midge
-COPY source /tmp_source/source
+COPY library /tmp_source/library
+COPY executables /tmp_source/executables
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
+COPY SandflyConfig.cmake.in /tmp_source/SandflyConfig.cmake.in
 COPY .git /tmp_source/.git
 
 ## store cmake args because we'll need to run twice (known package_builder issue)
