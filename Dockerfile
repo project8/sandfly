@@ -65,6 +65,8 @@ COPY .git /tmp_source/.git
 ## use EXTRA_CMAKE_ARGS to add or replace options at build time, CMAKE_CONFIG_ARGS_LIST are defaults
 ARG EXTRA_CMAKE_ARGS=""
 ENV CMAKE_CONFIG_ARGS_LIST="\
+      -D RapidJSON_DIR=/usr/lib64/cmake \
+      -D CMAKE_LIBRARY_PATH=/usr/lib64 \
       -D CMAKE_INSTALL_PREFIX:PATH=$SANDFLY_BUILD_PREFIX \
       ${EXTRA_CMAKE_ARGS} \
       "
