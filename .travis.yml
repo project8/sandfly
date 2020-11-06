@@ -13,12 +13,12 @@ branches:
     - develop
     - master
     - /^v\d+\.\d+\.\d+(-S*)?$/
-    ## build any branch with a name ending in `/build` (not including the backticks)
-    - /^.*\/build$/
+    ## build any branch with a name ending in `build` (not including the backticks)
+    - /.*\.(?i:build)$/
 
 matrix:
   include:
-    - env: BASE_USER=project8 BASE_REPO=p8compute_dependencies BASE_TAG=v0.9.0 PRODUCT_SUFFIX=p8compute SANDFLY_PREFIX_TAG=v1.12.2 SANDFLY_BASE_PREFIX=/usr/local/p8/sandfly
+    - env: BASE_USER=project8 BASE_REPO=p8compute_dependencies BASE_TAG=v1.0.0.beta PRODUCT_SUFFIX=p8compute SANDFLY_PREFIX_TAG=v1.12.2 SANDFLY_BASE_PREFIX=/usr/local/p8/sandfly
     - env: BASE_USER=amd64 BASE_REPO=debian BASE_TAG=9 PRODUCT_SUFFIX=debian SANDFLY_PREFIX_TAG="" SANDFLY_BASE_PREFIX=/usr/local
 
 script:
