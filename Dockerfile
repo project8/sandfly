@@ -72,6 +72,8 @@ ENV CMAKE_CONFIG_ARGS_LIST="\
       "
 
 RUN source $SANDFLY_BUILD_PREFIX/setup.sh \
+    && echo $CMAKE_CONFIG_ARGS_LIST \
+    && ls $CMAKE_CONFIG_ARGS_LIST \
     && mkdir -p /tmp_source/build \
     && cd /tmp_source/build \
     && cmake ${CMAKE_CONFIG_ARGS_LIST} .. \
