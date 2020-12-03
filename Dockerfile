@@ -2,7 +2,7 @@
 ## values which stored in the .travis.yaml file
 ARG IMG_USER=project8
 ARG IMG_REPO=p8compute_dependencies
-ARG IMG_TAG=v0.9.0
+ARG IMG_TAG=v1.0.0.beta
 
 FROM ${IMG_USER}/${IMG_REPO}:${IMG_TAG} as sandfly_common
 
@@ -52,11 +52,13 @@ WORKDIR /
 ########################
 FROM sandfly_common as sandfly_done
 
+COPY cmake /tmp_source/cmake
 COPY dripline-cpp /tmp_source/dripline-cpp
 COPY midge /tmp_source/midge
-COPY monarch /tmp_source/monarch
-COPY source /tmp_source/source
+COPY library /tmp_source/library
+COPY executables /tmp_source/executables
 COPY CMakeLists.txt /tmp_source/CMakeLists.txt
+COPY SandflyConfig.cmake.in /tmp_source/SandflyConfig.cmake.in
 COPY .git /tmp_source/.git
 
 ## store cmake args because we'll need to run twice (known package_builder issue)
