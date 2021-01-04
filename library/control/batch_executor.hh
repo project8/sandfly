@@ -37,7 +37,8 @@ namespace sandfly
     The actions taken are defined in the top-level param_node of the config file named "batch-actions", which must be of type array.
     Each element of the array is expected to be another param_node and have the following keys:
     - type (str): valid dripline::msg_op or "wait-for"
-    - rks (str): full routing-key-specifier for the desired action
+    - key (str): routing key for the desired action
+    - specifier (str): specifier for the desired action (if applicable)
     - payload (param_node): request message payload content for the action
     - sleep-for (int) [optional]: time in milliseconds for which the thread will sleep after receiving a reply on the specified request. Note i) that each request blocks until a reply is generated, but triggered actions may or may not be ongoing; ii) the "wait-for" action type sleeps this much time after *each* poll.
 

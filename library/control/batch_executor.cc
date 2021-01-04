@@ -155,7 +155,7 @@ namespace sandfly
     batch-actions:
         - type: cmd
           sleep-for: 500 # [ms], optional element to specify the sleep after issuing the cmd, before proceeding to the next.
-          rks: start-run
+          key: start-run
           payload:
             duration: 200
             filenames: '["/tmp/foo_t.yaml", "/tmp/foo_f.yaml"]'
@@ -222,12 +222,16 @@ namespace sandfly
             LDEBUG( plog, "there are no actions in the queue" );
             return;
         }
+
+        LINFO( plog, "Running action:\n" << *t_action.f_request_ptr );
+
         dripline::reply_ptr_t t_request_reply = f_request_receiver->submit_request_message( t_action.f_request_ptr );
         if ( ! t_request_reply )
         {
             LWARN( plog, "failed submitting action request" );
             throw error() << "error while submitting command";
         }
+
         // wait until daq status is no longer "running"
         if ( t_action.f_is_custom_action )
         {
@@ -254,17 +258,19 @@ namespace sandfly
 
     action_info batch_executor::parse_action( const scarab::param_node& a_action )
     {
-        action_info t_action_info;
-        std::string t_rks;
-        dripline::op_t t_msg_op;
         if ( ! a_action["payload"].is_node() )
         {
             LERROR( plog, "payload must be a param_node" );
             throw error() << "batch action payload must be a node";
         }
+
+        action_info t_action_info;
+        std::string t_routing_key, t_specifier;
+        dripline::op_t t_msg_op;
+        
         try
         {
-            t_rks = a_action["rks" ]().as_string();
+            t_routing_key = a_action["key" ]().as_string();
             t_action_info.f_sleep_duration_ms = std::stoi( a_action.get_value( "sleep-for", "500" ) );
             t_action_info.f_is_custom_action = false;
         }
@@ -273,6 +279,7 @@ namespace sandfly
             LERROR( plog, "error parsing action param_node, check keys and value types: " << e.what() );
             throw;
         }
+
         try
         {
             t_msg_op = dripline::to_op_t( a_action["type"]().as_string() );
@@ -280,7 +287,7 @@ namespace sandfly
         catch( dripline::dripline_error& )
         {
             LDEBUG( plog, "got a dripline error parsing request type" );
-            if ( a_action["type"]().as_string() == "wait-for" && t_rks == "daq-status" )
+            if ( a_action["type"]().as_string() == "wait-for" && t_routing_key == "daq-status" )
             {
                 LDEBUG( plog, "action is poll on run status" );
                 t_msg_op = dripline::op_t::get;
@@ -288,7 +295,10 @@ namespace sandfly
             }
             else throw;
         }
-        LDEBUG( plog, "build request object" );
+
+        if( a_action.has( "specifier" ) ) t_specifier = a_action["specifier"]().as_string();
+
+        LDEBUG( plog, "building request object" );
 
         scarab::param_ptr_t t_payload_ptr( new scarab::param_node( a_action["payload"].as_node() ) );
 
@@ -296,9 +306,11 @@ namespace sandfly
         t_action_info.f_request_ptr = dripline::msg_request::create(
                                             std::move(t_payload_ptr),
                                             t_msg_op,
-                                            std::string() );// reply-to is empty because no reply for batch requests
-        t_action_info.f_request_ptr->parsed_specifier().parse( t_rks );
-        LINFO( plog, "next action will be " << t_action_info.f_request_ptr->payload() );
+                                            t_routing_key );// reply-to is empty because no reply for batch requests
+        t_action_info.f_request_ptr->parsed_specifier().parse( t_specifier );
+
+        LDEBUG( plog, "Adding action:\n" << *t_action_info.f_request_ptr );
+
         return t_action_info;
     }
 
