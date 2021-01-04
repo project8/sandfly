@@ -176,15 +176,42 @@ namespace sandfly
             a_run_control_ready_cv.wait_for( t_run_control_lock, std::chrono::seconds(1) );
         }
 
-        while ( ( a_run_forever || f_action_queue.size() ) && ! is_canceled() )
+        LINFO( plog, "Batch executor is starting to execute actions" );
+
+        try
         {
-            if ( f_action_queue.size() )
+            while ( ( a_run_forever || f_action_queue.size() ) && ! is_canceled() )
             {
-                do_an_action();
+                if ( f_action_queue.size() )
+                {
+                    do_an_action();
+                }
             }
         }
+        catch( error& e )
+        {
+            LERROR( plog, "Caught a sandfly error; stopping batch execution\n" << e.what() );
+            scarab::signal_handler::exit( RETURN_ERROR );
+        }
+        catch( fatal_error& e )
+        {
+            LERROR( plog, "Caught a sandfly fatal_error: stopping batch execution\n" << e.what() );
+            scarab::signal_handler::exit( RETURN_ERROR );
+        }
+        catch( dripline::dripline_error& e )
+        {
+            LERROR( plog, "Caught a dripline error; stopping batch execution\n" << e.what() );
+            scarab::signal_handler::exit( RETURN_ERROR );
+        }
+        catch( std::exception& e )
+        {
+            LERROR( plog, "Caught an error; stopping batch execution\n" << e.what() )
+            scarab::signal_handler::exit( RETURN_ERROR );
+        }
 
-        LINFO( plog, "action loop complete" );
+        LINFO( plog, "Batch executor has completed action execution" );
+
+        return;
     }
 
     void batch_executor::do_an_action()
