@@ -155,8 +155,10 @@ namespace sandfly
         // start threads
         LPROG( plog, "Starting threads" );
         std::exception_ptr t_dc_ex_ptr;
+        LDEBUG( plog, "Starting run-control thread" );
         std::thread t_run_control_thread( &run_control::execute, f_run_control.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex) );
         // batch execution to do initial calls (AMQP consume hasn't started yet)
+        LDEBUG( plog, "Starting initial batch-executor thread" );
         std::thread t_executor_thread_initial( &batch_executor::execute, f_batch_executor.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex), false );
         LDEBUG( plog, "Waiting for the batch executor to finish" );
         t_executor_thread_initial.join();
@@ -166,7 +168,9 @@ namespace sandfly
         {
             // now execute the request receiver to start consuming
             //     and start the batch executor in infinite mode so that more command sets may be staged later
+            LDEBUG( plog, "Starting batch-executor thread" );
             std::thread t_executor_thread( &batch_executor::execute, f_batch_executor.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex), true );
+            LDEBUG( plog, "Starting receiver thread" );
             std::thread t_receiver_thread( &request_receiver::execute, f_request_receiver.get(), std::ref(t_run_control_ready_cv), std::ref(t_run_control_ready_mutex) );
 
             t_lock.unlock();

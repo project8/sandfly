@@ -32,7 +32,7 @@ namespace sandfly
 
     batch_executor is a control component used to submit a pre-defined sequence of requests upon startup and in a non-interactive way.
     This allows submission of any request which would normally be sent via a dripline request.
-    It can also supports (currently one) custom command (type = wait-for), which will poll the provided rks and wait for the return payload to not indicate a daq_status of running.
+    It can also supports (currently one) custom command (type = wait-for), which will poll the provided routing key and wait for the return payload to not indicate a daq_status of running.
 
     The actions taken are defined in the top-level param_node of the config file named "batch-actions", which must be of type array.
     Each element of the array is expected to be another param_node and have the following keys:
