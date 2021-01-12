@@ -1,29 +1,74 @@
 language: cpp
 
-dist: xenial
+stages:
+- name: Testing
+  if: branch = main OR 
+    branch = develop OR 
+    branch =~ /.*\.(?i:build)$/ OR 
+    type = pull_request 
 
-services:
-  - docker
-
-env:
-  - DOCKER_CLI_EXPERIMENTAL=enabled
-
-branches:
-  only:
-    - develop
-    - master
-    - /^v\d+\.\d+\.\d+(-S*)?$/
-    ## build any branch with a name ending in `build` (not including the backticks)
-    - /.*\.(?i:build)$/
-
-matrix:
+jobs:
   include:
-    - env: BASE_USER=project8 BASE_REPO=p8compute_dependencies BASE_TAG=v1.0.0.beta PRODUCT_SUFFIX=p8compute SANDFLY_PREFIX_TAG=v1.12.2 SANDFLY_BASE_PREFIX=/usr/local/p8/sandfly
-    - env: BASE_USER=amd64 BASE_REPO=debian BASE_TAG=9 PRODUCT_SUFFIX=debian SANDFLY_PREFIX_TAG="" SANDFLY_BASE_PREFIX=/usr/local
-
-script:
-    #- set -e
-    - echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
-    - docker pull ${BASE_USER}/${BASE_REPO}:${BASE_TAG}
-    - docker build --build-arg IMG_USER=${BASE_USER} --build-arg IMG_REPO=${BASE_REPO} --build-arg IMG_TAG=$BASE_TAG --build-arg SANDFLY_BASE_PREFIX=$SANDFLY_BASE_PREFIX --build-arg SANDFLY_PREFIX_TAG=$SANDFLY_PREFIX_TAG -t project8/sandfly:`echo $TRAVIS_BRANCH | tr / _`-${PRODUCT_SUFFIX} .
-    - docker push project8/sandfly:`echo $TRAVIS_BRANCH | tr / _`-${PRODUCT_SUFFIX}
+  - stage: Testing
+    os: osx
+    compiler: clang
+    osx_image: xcode11.3
+    addons:
+      homebrew:
+        packages:
+        - rapidjson
+        - yaml-cpp
+        - pybind11
+#        update: true
+    before_install:
+    - mkdir build
+    install:
+    - cd build
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE
+    - make -j2 install
+    script: testing/run_tests
+  - stage: Testing
+    os: linux
+    dist: focal
+    compiler: gcc
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - python3-all
+        - libboost-all-dev
+        - rapidjson-dev
+        - libyaml-cpp-dev
+        - pybind11-dev
+    before_install:
+    - cmake --version
+    - export CC=gcc && export CXX=g++
+    - mkdir build
+    install:
+    - cd build
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DPYTHON_EXECUTABLE=$(which python)
+    - make -j2 install
+    script: testing/run_tests
+  - stage: Testing
+    os: linux
+    dist: focal
+    compiler: clang
+    addons:
+      apt:
+        sources:
+        - ubuntu-toolchain-r-test
+        packages:
+        - python3-all
+        - libboost-all-dev
+        - rapidjson-dev
+        - libyaml-cpp-dev
+        - pybind11-dev
+    before_install:
+    - export CC=clang && export CXX=clang++
+    - mkdir build
+    install:
+    - cd build
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DPYTHON_EXECUTABLE=$(which python)
+    - make -j2 install
+    script: testing/run_tests
