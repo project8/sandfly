@@ -16,9 +16,9 @@ jobs:
     addons:
       homebrew:
         packages:
+        - rabbitmq-c
         - rapidjson
         - yaml-cpp
-        - pybind11
 #        update: true
     before_install:
     - mkdir build
@@ -36,11 +36,10 @@ jobs:
         sources:
         - ubuntu-toolchain-r-test
         packages:
-        - python3-all
         - libboost-all-dev
         - rapidjson-dev
         - libyaml-cpp-dev
-        - pybind11-dev
+        - librabbitmq-dev
     before_install:
     - cmake --version
     - export CC=gcc && export CXX=g++
@@ -59,11 +58,10 @@ jobs:
         sources:
         - ubuntu-toolchain-r-test
         packages:
-        - python3-all
         - libboost-all-dev
         - rapidjson-dev
         - libyaml-cpp-dev
-        - pybind11-dev
+        - librabbitmq-dev
     before_install:
     - export CC=clang && export CXX=clang++
     - mkdir build
