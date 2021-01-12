@@ -8,8 +8,6 @@ project( Sandfly VERSION 0.4.2 )
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 include( sandfly )
 
-pbuilder_prepare_project()
-
 
 #########
 # flags #
@@ -40,12 +38,23 @@ endif( Sandfly_ENABLE_ITERATOR_TIMING )
 # Boost (1.48 required for container; scarab minimum is 1.46)
 find_package( Boost 1.48.0 REQUIRED )
 
+
+#####################
+# prepare for build #
+#####################
+
+pbuilder_prepare_project()
+
+
+##############
+# submodules #
+##############
+
 # Midge
 pbuilder_add_submodule( Midge midge )
 midge_process_options()
 
 # Dripline
-add_definitions( -DDRIPLINE_AUTH_FILE=~/.project8_authentications.json )
 pbuilder_add_submodule( Dripline dripline-cpp )
 
 
