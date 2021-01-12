@@ -24,7 +24,7 @@ jobs:
     - mkdir build
     install:
     - cd build
-    - cmake .. -DSandfly_ENABLE_TESTING=TRUE
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DDripline_BUILD_PYTHON=FALSE
     - make -j2 install
     script: testing/run_tests
   - stage: Testing
@@ -46,7 +46,7 @@ jobs:
     - mkdir build
     install:
     - cd build
-    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DPYTHON_EXECUTABLE=$(which python)
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DDripline_BUILD_PYTHON=FALSE
     - make -j2 install
     script: testing/run_tests
   - stage: Testing
@@ -67,6 +67,6 @@ jobs:
     - mkdir build
     install:
     - cd build
-    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DPYTHON_EXECUTABLE=$(which python)
+    - cmake .. -DSandfly_ENABLE_TESTING=TRUE -DDripline_BUILD_PYTHON=FALSE
     - make -j2 install
     script: testing/run_tests
