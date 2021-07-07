@@ -1,53 +1,37 @@
 ## Note that these IMG_* ARG values are defaults, but actual automated builds use
-## values which stored in the .travis.yaml file
+## values supplied by the build system
 ARG IMG_USER=project8
 ARG IMG_REPO=p8compute_dependencies
-ARG IMG_TAG=v1.0.0.beta
+ARG IMG_TAG=v1.0.0
 
 FROM ${IMG_USER}/${IMG_REPO}:${IMG_TAG} as sandfly_common
 
-ARG SANDFLY_PREFIX_TAG=beta
-ENV SANDFLY_PREFIX_TAG=${SANDFLY_PREFIX_TAG}
+ARG build_type=Release
+ENV SANDFLY_BUILD_TYPE=$build_type
+
+ARG SANDFLY_TAG=beta
+ENV SANDFLY_TAG=${SANDFLY_TAG}
 ARG SANDFLY_BASE_PREFIX=/usr/local/p8/sandfly
 ARG SANDFLY_BUILD_PREFIX=${SANDFLY_BASE_PREFIX}/${SANDFLY_PREFIX_TAG}
 ENV SANDFLY_BUILD_PREFIX=${SANDFLY_BUILD_PREFIX}
+ARG SANDFLY_BUILD_TYPE=RELEASE
 
-SHELL ["/bin/bash", "-c"]
+ARG CC_VAL=gcc
+ENV CC=${CC_VAL}
+ARG CXX_VAL=g++
+ENV CXX=${CXX_VAL}
 
-RUN mkdir -p $SANDFLY_BUILD_PREFIX
-WORKDIR $SANDFLY_BUILD_PREFIX
-
-RUN echo "export SANDFLY_BUILD_PREFIX=${SANDFLY_BUILD_PREFIX}" >> setup.sh \
-    && echo "export PATH=$SANDFLY_BUILD_PREFIX/bin:$PATH" >> setup.sh \
-    && echo "export LD_LIBRARY_PATH=$SANDFLY_BUILD_PREFIX/lib:$LD_LIBRARY_PATH" >> setup.sh;
-RUN /bin/true \
-    && if [ -a /etc/centos-release ]; then \
-        ## build setup for p8compute base image
-        chmod -R 777 $SANDFLY_BUILD_PREFIX/.. \
-        && echo "source ${COMMON_BUILD_PREFIX}/setup.sh" >> setup.sh \
-        && echo "export SANDFLY_TAG=${SANDFLY_TAG}" >> setup.sh \
-        && echo "ln -sfT $SANDFLY_BUILD_PREFIX $SANDFLY_BUILD_PREFIX/../current" >> setup.sh \
-        && /bin/true;\
-    elif [ -a /etc/debian_version ]; then \
-        ## build setup for debian base image
-        apt-get update \
-        && apt-get clean \
-        && apt-get --fix-missing -y install \
-            build-essential \
-            cmake \
-            libfftw3-3 \
-            libfftw3-dev \
-            gdb \
-            libboost-all-dev \
-            libhdf5-dev \
-            librabbitmq-dev \
-            wget \
-        && apt-get clean \
-        && rm -rf /var/lib/apt/lists/* \
-        && /bin/true;\
-    fi
-
-WORKDIR /
+RUN mkdir -p $SANDFLY_BUILD_PREFIX &&\
+    chmod -R 777 $SANDFLY_BUILD_PREFIX/.. &&\
+    cd $SANDFLY_BUILD_PREFIX &&\
+    echo "source ${COMMON_BUILD_PREFIX}/setup.sh" > setup.sh &&\
+    echo "export SANDFLY_TAG=${SANDFLY_TAG}" >> setup.sh &&\
+    echo "export SANDFLY_BUILD_PREFIX=${SANDFLY_BUILD_PREFIX}" >> setup.sh &&\
+    echo 'ln -sfT $SANDFLY_BUILD_PREFIX $SANDFLY_BUILD_PREFIX/../current' >> setup.sh &&\
+    echo 'export PATH=$SANDFLY_BUILD_PREFIX/bin:$PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$SANDFLY_BUILD_PREFIX/lib:$LD_LIBRARY_PATH' >> setup.sh &&\
+    echo 'export LD_LIBRARY_PATH=$SANDFLY_BUILD_PREFIX/lib64:$LD_LIBRARY_PATH' >> setup.sh &&\
+    /bin/true
 
 ########################
 FROM sandfly_common as sandfly_done
@@ -65,8 +49,10 @@ COPY .git /tmp_source/.git
 ## use EXTRA_CMAKE_ARGS to add or replace options at build time, CMAKE_CONFIG_ARGS_LIST are defaults
 ARG EXTRA_CMAKE_ARGS=""
 ENV CMAKE_CONFIG_ARGS_LIST="\
+      -D CMAKE_BUILD_TYPE=$SANDFLY_BUILD_TYPE \
       -D CMAKE_INSTALL_PREFIX:PATH=$SANDFLY_BUILD_PREFIX \
       ${EXTRA_CMAKE_ARGS} \
+      ${OS_CMAKE_ARGS} \
       "
 
 RUN source $SANDFLY_BUILD_PREFIX/setup.sh \
