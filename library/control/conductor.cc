@@ -53,9 +53,6 @@ namespace sandfly
 
         set_status( k_starting );
 
-        scarab::signal_handler t_sig_hand;
-        t_sig_hand.add_cancelable( this );
-
         // configuration manager
         //config_manager t_config_mgr( a_config, &t_dev_mgr );
 
@@ -191,8 +188,6 @@ namespace sandfly
         }
         t_run_control_thread.join();
         LPROG( plog, "DAQ control thread has ended" );
-
-        t_sig_hand.remove_cancelable( this );
 
         if( t_msg_relay_thread.joinable() ) t_msg_relay_thread.join();
         LDEBUG( plog, "Message relay thread has ended" );
