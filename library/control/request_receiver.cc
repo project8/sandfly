@@ -72,15 +72,24 @@ namespace sandfly
             while( ! cancelable::is_canceled() )
             {
                 // blocking call to wait for incoming message
-                listen();
+                if( ! listen() ) 
+                {
+                    LERROR( plog, "An error occurred while listening for messages" );
+                    set_status( k_error );
+                    scarab::signal_handler::cancel_all( RETURN_ERROR );
+                }
             }
         }
 
         LINFO( plog, "No longer waiting for messages" );
 
-        stop();
+        if( ! stop() )
+        {
+            LERROR( plog, "An error occurred while stopping the request receiver" );
+            set_status( k_error );
+        }
 
-        set_status( k_done );
+        if( get_status() != k_error && get_status() != k_canceled ) set_status( k_done );
         LDEBUG( plog, "Request receiver is done" );
 
         return;
@@ -89,7 +98,7 @@ namespace sandfly
     void request_receiver::do_cancellation( int )
     {
         LDEBUG( plog, "Canceling request receiver" );
-        set_status( k_canceled );
+        if( get_status() != k_error ) set_status( k_canceled );
         return;
     }
 
