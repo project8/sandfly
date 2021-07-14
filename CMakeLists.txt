@@ -1,9 +1,9 @@
-# Minimum cmake verison 3.1 required for the variable CMAKE_CXX_STANDARD
-cmake_minimum_required (VERSION 3.1)
+# Minimum cmake verison 3.12 required by scarab
+cmake_minimum_required (VERSION 3.12)
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Sandfly VERSION 0.5.1 )
+project( Sandfly VERSION 0.5.2 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 include( sandfly )
