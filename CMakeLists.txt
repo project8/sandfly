@@ -3,7 +3,7 @@ cmake_minimum_required (VERSION 3.12)
 
 # Define the project
 cmake_policy( SET CMP0048 NEW ) # version in project()
-project( Sandfly VERSION 0.5.2 )
+project( Sandfly VERSION 0.5.3 )
 
 list( APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake )
 include( sandfly )
