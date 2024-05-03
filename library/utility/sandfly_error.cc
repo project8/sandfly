@@ -6,16 +6,16 @@ namespace sandfly
 {
 
     error::error() :
-            base_exception()
+            typed_exception()
     {
     }
     error::error( const error& p_copy ) :
-            base_exception( p_copy )
+            typed_exception( p_copy )
     {
     }
     error& error::operator=( const error& p_copy )
     {
-        base_exception::operator=( p_copy );
+        typed_exception::operator=( p_copy );
         return *this;
     }
     error::~error() noexcept
@@ -24,16 +24,16 @@ namespace sandfly
 
 
     fatal_error::fatal_error() :
-            base_exception()
+            typed_exception()
     {
     }
     fatal_error::fatal_error( const fatal_error& p_copy ) :
-            base_exception( p_copy )
+            typed_exception( p_copy )
     {
     }
     fatal_error& fatal_error::operator=( const fatal_error& p_copy )
     {
-        base_exception::operator=( p_copy );
+        typed_exception::operator=( p_copy );
         return *this;
     }
     fatal_error::~fatal_error() noexcept

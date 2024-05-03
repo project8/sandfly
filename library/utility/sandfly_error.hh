@@ -6,7 +6,7 @@
 namespace sandfly
 {
 
-    class error : public scarab::base_exception< error >
+    class error : public scarab::typed_exception< error >
     {
         public:
             error();
@@ -15,7 +15,7 @@ namespace sandfly
             virtual ~error() noexcept;
     };
 
-    class fatal_error : public scarab::base_exception< fatal_error >
+    class fatal_error : public scarab::typed_exception< fatal_error >
     {
         public:
             fatal_error();
