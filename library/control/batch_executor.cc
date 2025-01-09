@@ -264,22 +264,15 @@ namespace sandfly
             throw error() << "batch action payload must be a node";
         }
 
-        action_info t_action_info;
-        std::string t_routing_key, t_specifier;
-        dripline::op_t t_msg_op;
-        
-        try
-        {
-            t_routing_key = a_action["key" ]().as_string();
-            t_action_info.f_sleep_duration_ms = std::stoi( a_action.get_value( "sleep-for", "500" ) );
-            t_action_info.f_is_custom_action = false;
-        }
-        catch( scarab::error& e )
-        {
-            LERROR( plog, "error parsing action param_node, check keys and value types: " << e.what() );
-            throw;
-        }
+        std::string t_routing_key = a_action.get_value( "key", f_request_receiver->name() );
+        std::string t_specifier = a_action.get_value( "specifier", "" );
+        scarab::param_ptr_t t_payload_ptr( new scarab::param_node( a_action["payload"].as_node() ) );
 
+        action_info t_action_info;
+        t_action_info.f_sleep_duration_ms = a_action.get_value( "sleep-for", 500 );
+        t_action_info.f_is_custom_action = false;
+
+        dripline::op_t t_msg_op;
         try
         {
             t_msg_op = dripline::to_op_t( a_action["type"]().as_string() );
@@ -296,11 +289,7 @@ namespace sandfly
             else throw;
         }
 
-        if( a_action.has( "specifier" ) ) t_specifier = a_action["specifier"]().as_string();
-
         LDEBUG( plog, "building request object" );
-
-        scarab::param_ptr_t t_payload_ptr( new scarab::param_node( a_action["payload"].as_node() ) );
 
         // put it together into a request
         t_action_info.f_request_ptr = dripline::msg_request::create(
