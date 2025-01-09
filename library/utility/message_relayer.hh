@@ -20,10 +20,10 @@ namespace scarab
 namespace sandfly
 {
 
-    class message_relayer : public dripline::relayer, public scarab::singleton< message_relayer >
+    class message_relayer : public dripline::relayer
     {
         public:
-            message_relayer( const scarab::param_node& a_config = scarab::param_node() );
+            message_relayer( const scarab::param_node& a_config, const scarab::authentication& a_auth );
             virtual ~message_relayer();
 
         public:
@@ -34,6 +34,9 @@ namespace sandfly
 
             mv_referrable( std::string, queue_name );
             mv_accessible( bool, use_relayer );
+
+        protected:
+            void send_to_slack( const std::string& a_msg_text, const std::string& a_rk_root ) const;
     };
 
 } /* namespace sandfly */

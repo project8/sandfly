@@ -21,12 +21,14 @@
 
 namespace scarab
 {
+    class authentication;
     class version_semantic;
 }
 
 namespace sandfly
 {
     class batch_executor;
+    class message_relayer;
     class run_control;
     class request_receiver;
     class stream_manager;
@@ -52,7 +54,7 @@ namespace sandfly
             conductor();
             virtual ~conductor();
 
-            void execute( const scarab::param_node& a_config );
+            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth );
 
             void quit_server();
 
@@ -71,7 +73,7 @@ namespace sandfly
 
             int f_return;
 
-            std::function< std::shared_ptr< run_control >(const scarab::param_node&, std::shared_ptr< stream_manager >) > f_rc_creator;
+            std::function< std::shared_ptr< run_control >(const scarab::param_node&, std::shared_ptr< stream_manager >, std::shared_ptr< message_relayer >) > f_rc_creator;
 
             // component pointers for asynchronous access
             std::shared_ptr< request_receiver > f_request_receiver;
@@ -79,6 +81,7 @@ namespace sandfly
             //std::shared_ptr< daq_worker > f_daq_worker;
             std::shared_ptr< run_control > f_run_control;
             std::shared_ptr< stream_manager > f_stream_manager;
+            std::shared_ptr< message_relayer > f_message_relayer;
 
             std::mutex f_component_mutex;
 
@@ -105,8 +108,8 @@ namespace sandfly
     template< typename rc_type >
     void conductor::set_rc_creator()
     {
-        f_rc_creator = []( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr )->std::shared_ptr< run_control >{ 
-            return std::make_shared< rc_type >( a_config, a_mgr ); 
+        f_rc_creator = []( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_rly )->std::shared_ptr< run_control >{ 
+            return std::make_shared< rc_type >( a_config, a_mgr, a_rly ); 
         };
         return;
     }
