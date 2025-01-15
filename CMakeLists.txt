@@ -30,6 +30,8 @@ else( Sandfly_ENABLE_ITERATOR_TIMING )
     remove_definitions( -DENABLE_ITERATOR_TIMING )
 endif( Sandfly_ENABLE_ITERATOR_TIMING )
 
+# We don't need Python bindings
+set_option( Scarab_BUILD_PYTHON FALSE )
 
 ################
 # dependencies #
