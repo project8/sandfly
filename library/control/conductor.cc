@@ -15,6 +15,7 @@
 #include "stream_manager.hh"
 #include "batch_executor.hh"
 
+#include "authentication.hh"
 #include "logger.hh"
 
 #include <condition_variable>
@@ -37,6 +38,7 @@ namespace sandfly
             f_batch_executor(),
             f_run_control(),
             f_stream_manager(),
+            f_message_relayer(),
             f_component_mutex(),
             f_status( k_initialized )
     {
@@ -47,7 +49,7 @@ namespace sandfly
     {
     }
 
-    void conductor::execute( const param_node& a_config )
+    void conductor::execute( const param_node& a_config, const scarab::authentication& a_auth )
     {
         LPROG( plog, "Creating server objects" );
 
@@ -64,13 +66,13 @@ namespace sandfly
             // dripline relayer
             try
             {
-                message_relayer* t_msg_relay = message_relayer::create_instance( a_config["dripline"].as_node() );
+                f_message_relayer.reset( new message_relayer( a_config["dripline"].as_node(), a_auth) );
                 if( a_config["post-to-slack"]().as_bool() )
                 {
-                    t_msg_relay->set_use_relayer( true );
+                    f_message_relayer->set_use_relayer( true );
                     LDEBUG( plog, "Starting message relayer thread" );
-                    t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, t_msg_relay );
-                    t_msg_relay->slack_notice( "Sandfly is starting up" );
+                    t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, f_message_relayer.get() );
+                    f_message_relayer->slack_notice( "Sandfly is starting up" );
                 }
                 else
                 {
@@ -91,7 +93,7 @@ namespace sandfly
             if( ! f_run_control )
             {
                 LDEBUG( plog, "Creating run control" );
-                f_run_control = f_rc_creator( a_config, f_stream_manager ); //.reset( new run_control( a_config, f_stream_manager ) );
+                f_run_control = f_rc_creator( a_config, f_stream_manager, f_message_relayer ); //.reset( new run_control( a_config, f_stream_manager ) );
             }
             else
             {
@@ -112,7 +114,7 @@ namespace sandfly
 
             // request receiver
             LDEBUG( plog, "Creating request receiver" );
-            f_request_receiver.reset( new request_receiver( a_config ) );
+            f_request_receiver.reset( new request_receiver( a_config, a_auth ) );
             // batch executor
             LDEBUG( plog, "Creating batch executor" );
             f_batch_executor.reset( new batch_executor( a_config, f_request_receiver ) );
@@ -203,11 +205,11 @@ namespace sandfly
     {
         LDEBUG( plog, "Canceling run server with code <" << a_code << ">" );
         f_return = a_code;
-        message_relayer::get_instance()->slack_notice( "Sandfly is shutting down" );
+        f_message_relayer->slack_notice( "Sandfly is shutting down" );
         f_batch_executor->cancel( a_code );
         f_request_receiver->cancel( a_code );
         f_run_control->cancel( a_code );
-        message_relayer::get_instance()->cancel( a_code );
+        f_message_relayer->cancel( a_code );
         //f_node_manager->cancel();
         return;
     }

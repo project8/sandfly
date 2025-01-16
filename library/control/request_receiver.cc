@@ -6,6 +6,7 @@
 #include "sandfly_return_codes.hh"
 #include "sandfly_error.hh"
 
+#include "authentication.hh"
 #include "logger.hh"
 #include "signal_handler.hh"
 
@@ -26,8 +27,8 @@ namespace sandfly
 
     LOGGER( plog, "request_receiver" );
 
-    request_receiver::request_receiver( const param_node& a_config ) :
-            hub( a_config["dripline"].as_node() ),
+    request_receiver::request_receiver( const param_node& a_config, const scarab::authentication& a_auth ) :
+            hub( a_config["dripline_mesh"].as_node(), a_auth ),
             control_access(),
             f_set_conditions( a_config["set-conditions"].as_node() ),
             f_status( k_initialized )

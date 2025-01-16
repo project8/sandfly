@@ -38,7 +38,7 @@ namespace sandfly
 {
     LOGGER( plog, "run_control" );
 
-    run_control::run_control( const param_node& a_config, std::shared_ptr< stream_manager > a_mgr ) :
+    run_control::run_control( const param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay ) :
             scarab::cancelable(),
             control_access(),
             f_activation_condition(),
@@ -51,7 +51,7 @@ namespace sandfly
             f_run_stop_mutex(),
             f_do_break_run( false ),
             f_run_return(),
-            f_msg_relay( message_relayer::get_instance() ),
+            f_msg_relay( a_msg_relay ),
             f_run_duration( 1000 ),
             f_status( status::deactivated )
     {
