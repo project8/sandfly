@@ -8,13 +8,17 @@
 #include "message.hh"
 
 #include "param.hh"
-
 #include "cancelable.hh"
 
 #include <atomic>
 #include <condition_variable>
 #include <functional>
 #include <memory>
+
+namespace scarab
+{
+    class authentication;
+}
 
 namespace sandfly
 {
@@ -35,7 +39,7 @@ namespace sandfly
     class request_receiver : public dripline::hub, public control_access
     {
         public:
-            request_receiver( const scarab::param_node& a_config );
+            request_receiver( const scarab::param_node& a_config, const scarab::authentication& a_auth );
             virtual ~request_receiver();
 
             void execute( std::condition_variable& a_run_control_ready_cv, std::mutex& a_run_control_ready_mutex );

@@ -86,7 +86,7 @@ namespace sandfly
 
             void do_an_action();
 
-            static action_info parse_action( const scarab::param_node& a_action );
+            action_info parse_action( const scarab::param_node& a_action );
 
     };
 

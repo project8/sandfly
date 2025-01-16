@@ -18,7 +18,8 @@ if( UNIX AND NOT APPLE )
     set( default__fpa_flag TRUE )
 endif( UNIX AND NOT APPLE )
 
-set_option( USE_CPP11 TRUE )
+# always use C++17 or greater
+set_to_max( CMAKE_CXX_STANDARD 17 )
 
 option( Sandfly_ENABLE_ITERATOR_TIMING "Flag to enable iterator time profiling" FALSE )
 
@@ -29,6 +30,8 @@ else( Sandfly_ENABLE_ITERATOR_TIMING )
     remove_definitions( -DENABLE_ITERATOR_TIMING )
 endif( Sandfly_ENABLE_ITERATOR_TIMING )
 
+# We don't need Python bindings
+set_option( Scarab_BUILD_PYTHON FALSE )
 
 ################
 # dependencies #
