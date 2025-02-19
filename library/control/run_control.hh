@@ -55,6 +55,11 @@ namespace sandfly
      Settings that can be applied in the "daq" section of the global config:
      - "duration" (integer): the duration of the next run in ms
      - "activate-at-startup" (boolean): whether or not the DAQ control is activated immediately on startup
+
+     Developer notes:
+     - Even though run_control's constructor has a default argument for the message_relayer, if you derive a class from 
+       run_control, the constructor should still have all three arguments.  This allows conductor to propertly create 
+       the specified run control type with all three arguments (even if the relayer isn't being used).
      */
     class run_control : public scarab::cancelable, public control_access
     {
