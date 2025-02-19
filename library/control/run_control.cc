@@ -62,11 +62,6 @@ namespace sandfly
         }
 
         set_run_duration( f_daq_config.get_value( "duration", get_run_duration() ) );
-
-        if( ! f_msg_relay )
-        {
-            f_msg_relay = std::make_shared< null_relayer >();
-        }
     }
 
     void run_control::initialize()

@@ -9,6 +9,7 @@
 #define SANDFLY_RUN_CONTROL_HH_
 
 #include "control_access.hh"
+#include "message_relayer.hh"
 #include "stream_manager.hh" // for midge_package
 #include "sandfly_error.hh"
 
@@ -24,7 +25,6 @@
 
 namespace sandfly
 {
-    class message_relayer;
     class request_receiver;
 
     /*!
@@ -78,7 +78,7 @@ namespace sandfly
             };
 
         public:
-            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay = nullptr );
+            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay = std::make_shared< null_relayer >() );
             virtual ~run_control() = default;
 
             /// Pre-execution initialization (call after setting the control_access pointer)

@@ -38,7 +38,7 @@ namespace sandfly
             f_batch_executor(),
             f_run_control(),
             f_stream_manager(),
-            f_message_relayer( new null_relayer() ),
+            f_message_relayer(),
             f_component_mutex(),
             f_status( k_initialized )
     {
