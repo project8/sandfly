@@ -25,7 +25,7 @@ namespace sandfly
 
     
     null_relayer::null_relayer() :
-            message_relayer( param_node( "dripline_mesh"_a=param_node() ), scarab::authentication() )
+            message_relayer( param_node( "dripline_mesh"_a=param_node("make_connection"_a=false) ), scarab::authentication() )
     {}
 
     void null_relayer::send_notice( const std::string& a_msg_text ) const
