@@ -33,9 +33,9 @@ namespace sandfly
     {
         // default server configuration
 
-        add( "dripline", dripline::dripline_config() );
+        add( "dripline_mesh", dripline::dripline_config() );
 
-        add( "post-to-slack", false );
+        add( "use-relayer", false );
 
         param_node t_daq_node;
         t_daq_node.add( "activate-at-startup", false );
@@ -92,7 +92,7 @@ namespace sandfly
     {
         dripline::add_dripline_options( an_app );
 
-        an_app.add_config_flag< bool >( "--post-to-slack", "post-to-slack", "Flag for en/disabling posting to Slack" );
+        an_app.add_config_flag< bool >( "--use-relayer", "use-relayer", "Flag for en/disabling the use of the message relayer" );
         an_app.add_config_flag< bool >( "--activate-at-startup", "daq.activate-at-startup", "Flag to make Psyllid activate on startup" );
         an_app.add_config_option< unsigned >( "-n,--n-files", "daq.n-files", "Number of files to be written in parallel" );
         an_app.add_config_option< unsigned >( "-d,--duration", "daq.duration", "Run duration in ms" );
