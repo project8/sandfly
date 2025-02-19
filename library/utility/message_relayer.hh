@@ -36,6 +36,11 @@ namespace sandfly
             virtual void send_error( const std::string& a_msg_text ) const = 0;
             virtual void send_critical( const std::string& a_msg_text ) const = 0;
 
+            virtual void send_notice( scarab::param_ptr_t&& a_payload ) const = 0;
+            virtual void send_warn( scarab::param_ptr_t&& a_payload ) const = 0;
+            virtual void send_error( scarab::param_ptr_t&& a_payload ) const = 0;
+            virtual void send_critical( scarab::param_ptr_t&& a_payload ) const = 0;
+
             mv_referrable( std::string, queue_name );
             mv_accessible( bool, use_relayer );
     };
@@ -60,7 +65,12 @@ namespace sandfly
             void send_warn( const std::string& ) const override;
             void send_error( const std::string& ) const override;
             void send_critical( const std::string& ) const override;
-};
+
+            void send_notice( scarab::param_ptr_t&& ) const override;
+            void send_warn( scarab::param_ptr_t&& ) const override;
+            void send_error( scarab::param_ptr_t&& ) const override;
+            void send_critical( scarab::param_ptr_t&& ) const override;
+        };
 
 } /* namespace sandfly */
 

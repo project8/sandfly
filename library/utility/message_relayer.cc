@@ -48,4 +48,23 @@ namespace sandfly
         return;
     }
 
+    void null_relayer::send_notice( scarab::param_ptr_t&& a_payload ) const
+    {
+        return;
+    }
+
+    void null_relayer::send_warn( scarab::param_ptr_t&& a_payload ) const
+    {
+        return;
+    }
+
+    void null_relayer::send_error( scarab::param_ptr_t&& a_payload ) const
+    {
+        return;
+    }
+
+    void null_relayer::send_critical( scarab::param_ptr_t&& a_payload ) const
+    {
+        return;
+    }
 } /* namespace sandfly */
