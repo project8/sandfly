@@ -445,8 +445,14 @@ namespace sandfly
         LINFO( plog, "Run has stopped" );
         f_msg_relay->send_notice( "Run has stopped" );
 
-        if( f_do_break_run ) LINFO( plog, "Run was stopped manually" );
-        if( is_canceled() ) LINFO( plog, "Run was cancelled" );
+        if( f_do_break_run ) 
+        {
+            LINFO( plog, "Run was stopped manually" );
+        }
+        if( is_canceled() ) 
+        {
+            LINFO( plog, "Run was cancelled" );
+        }
 
         this->on_post_run();
 
@@ -459,7 +465,10 @@ namespace sandfly
 
         if( get_status() != status::running ) return;
 
-        if( ! f_midge_pkg.have_lock() ) LWARN( plog, "Do not have midge resource" );
+        if( ! f_midge_pkg.have_lock() ) 
+        {
+            LWARN( plog, "Do not have midge resource" );
+        }
 
         std::unique_lock< std::mutex > t_run_stop_lock( f_run_stop_mutex );
         f_do_break_run = true;
