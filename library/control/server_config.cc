@@ -35,6 +35,8 @@ namespace sandfly
 
         add( "dripline_mesh", dripline::dripline_config() );
 
+        add( "name", "sandfly" );
+
         add( "use-relayer", false );
 
         param_node t_daq_node;
