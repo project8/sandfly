@@ -157,6 +157,8 @@ namespace sandfly
 
             void register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr );
 
+            const message_relayer& relayer() const;
+
         protected:
             void do_cancellation( int a_code );
 
@@ -221,6 +223,11 @@ namespace sandfly
     {
         f_status.store( a_status );
         return;
+    }
+
+    inline const message_relayer& run_control::relayer() const
+    {
+        return *f_msg_relay;
     }
 
 
