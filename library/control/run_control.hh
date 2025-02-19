@@ -73,7 +73,7 @@ namespace sandfly
             };
 
         public:
-            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay );
+            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay = nullptr );
             virtual ~run_control() = default;
 
             /// Pre-execution initialization (call after setting the control_access pointer)
