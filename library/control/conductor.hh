@@ -47,6 +47,7 @@ namespace sandfly
      It also adds set, get and cmd request handlers by registering handlers with the request_receiver.
      Then it calls run_control.execute and request_receiver.execute in 2 separate threads.
      conductor.execute() only returns when all threads are joined.
+     If use of a message_relayer is desired, it should be supplied to conductor.execute().  This argument is optional.
      */
     class conductor : public scarab::cancelable
     {
@@ -54,7 +55,7 @@ namespace sandfly
             conductor();
             virtual ~conductor();
 
-            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth );
+            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth, std::shared_ptr< message_relayer > a_relayer = nullptr );
 
             void quit_server();
 

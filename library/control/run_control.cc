@@ -62,10 +62,11 @@ namespace sandfly
         }
 
         set_run_duration( f_daq_config.get_value( "duration", get_run_duration() ) );
-    }
 
-    run_control::~run_control()
-    {
+        if( ! f_msg_relay )
+        {
+            f_msg_relay = std::make_shared< null_relayer >();
+        }
     }
 
     void run_control::initialize()
@@ -122,7 +123,7 @@ namespace sandfly
                 {
                     LWARN( plog, "Exception caught while resetting midge: " << e.what() );
                     LWARN( plog, "Returning to the \"deactivated\" state and awaiting further instructions" );
-                    f_msg_relay->slack_error( std::string("DAQ could not be activated (non-fatal error).\nDetails: ") + e.what() );
+                    f_msg_relay->send_error( std::string("DAQ could not be activated (non-fatal error).\nDetails: ") + e.what() );
                     set_status( status::deactivated );
                     continue;
                 }
@@ -130,7 +131,7 @@ namespace sandfly
                 {
                     LERROR( plog, "Exception caught while resetting midge: " << e.what() );
                     LERROR( plog, "Setting an error state and exiting the application" );
-                    f_msg_relay->slack_error( std::string("DAQ could not be activated (fatal error).\nDetails: ") + e.what() );
+                    f_msg_relay->send_error( std::string("DAQ could not be activated (fatal error).\nDetails: ") + e.what() );
                     set_status( status::error );
                     continue;
                 }
@@ -141,7 +142,7 @@ namespace sandfly
                 if( ! f_midge_pkg.have_lock() )
                 {
                     LERROR( plog, "Could not get midge resource" );
-                    f_msg_relay->slack_error( "Midge resource is locked; unable to activate the DAQ" );
+                    f_msg_relay->send_error( "Midge resource is locked; unable to activate the DAQ" );
                     set_status( status::error );
                     continue;
                 }
@@ -172,7 +173,7 @@ namespace sandfly
                 catch( std::exception& e )
                 {
                     LERROR( plog, "An exception was thrown while running midge: " << e.what() );
-                    f_msg_relay->slack_error( std::string("An exception was thrown while running midge: ") + e.what() );
+                    f_msg_relay->send_error( std::string("An exception was thrown while running midge: ") + e.what() );
                     set_status( status::error );
                 }
 
@@ -190,19 +191,19 @@ namespace sandfly
                     catch( midge::error& e )
                     {
                         LERROR( plog, "A Midge error has been caught: " << e.what() );
-                        f_msg_relay->slack_error( std::string("A Midge error has been caught: ") + e.what() );
+                        f_msg_relay->send_error( std::string("A Midge error has been caught: ") + e.what() );
                         set_status( status::error );
                     }
                     catch( midge::node_fatal_error& e )
                     {
                         LERROR( plog, "A fatal node error was thrown from midge: " << e.what() );
-                        f_msg_relay->slack_error( std::string("A fatal node error was thrown from midge: ") + e.what() );
+                        f_msg_relay->send_error( std::string("A fatal node error was thrown from midge: ") + e.what() );
                         set_status( status::error );
                     }
                     catch( midge::node_nonfatal_error& e )
                     {
                         LWARN( plog, "A non-fatal node error was thrown from midge: " << e.what() );
-                        f_msg_relay->slack_error( std::string("A non-fatal node error was thrown from midge.  ") +
+                        f_msg_relay->send_error( std::string("A non-fatal node error was thrown from midge.  ") +
                                 "DAQ is still running (hopefully) but its state has been reset.\n" +
                                 "Error details: " + e.what() );
                         set_status( status::do_restart );
@@ -210,7 +211,7 @@ namespace sandfly
                     catch( std::exception& e )
                     {
                         LERROR( plog, "An unknown exception was thrown from midge: " << e.what() );
-                        f_msg_relay->slack_error( std::string("An unknown exception was thrown from midge: ") + e.what() );
+                        f_msg_relay->send_error( std::string("An unknown exception was thrown from midge: ") + e.what() );
                         set_status( status::error );
                     }
                     LDEBUG( plog, "Calling stop_run" );
@@ -229,7 +230,7 @@ namespace sandfly
                 else if( get_status() == status::error )
                 {
                     LERROR( plog, "Canceling due to an error" );
-                    f_msg_relay->slack_error( "Sandfly is exiting due to an error.  Hopefully the details have already been reported." );
+                    f_msg_relay->send_error( "Sandfly is exiting due to an error.  Hopefully the details have already been reported." );
                     scarab::signal_handler::cancel_all( RETURN_ERROR );
                     continue;
                 }
@@ -238,7 +239,7 @@ namespace sandfly
                     LDEBUG( plog, "Setting status to deactivated" );
                     set_status( status::deactivated );
                     LINFO( plog, "Commencing restart of the DAQ" );
-                    f_msg_relay->slack_warn( "Commencing restart of the Sandfly DAQ nodes" );
+                    f_msg_relay->send_warn( "Commencing restart of the Sandfly DAQ nodes" );
                     std::this_thread::sleep_for( std::chrono::milliseconds(250) );
                     LDEBUG( plog, "Will activate DAQ control asynchronously" );
                     t_activation_return = std::async( std::launch::async,
@@ -254,7 +255,7 @@ namespace sandfly
             else if( t_status == status::activated )
             {
                 LERROR( plog, "DAQ control status is activated in the outer execution loop!" );
-                f_msg_relay->slack_error( "DAQ control status is activated in the outer execution loop!" );
+                f_msg_relay->send_error( "DAQ control status is activated in the outer execution loop!" );
                 set_status( status::error );
                 continue;
             }
@@ -273,7 +274,7 @@ namespace sandfly
             else if( t_status == status::error )
             {
                 LERROR( plog, "DAQ control is in an error state" );
-                f_msg_relay->slack_error( "DAQ control is in an error state and will now exit" );
+                f_msg_relay->send_error( "DAQ control is in an error state and will now exit" );
                 this->on_error();
                 f_node_bindings = nullptr;
                 scarab::signal_handler::cancel_all( RETURN_ERROR );
@@ -378,7 +379,7 @@ namespace sandfly
         // a_duration is in ms
 
         LINFO( plog, "Run is commencing" );
-        f_msg_relay->slack_notice( "Run is commencing" );
+        f_msg_relay->send_notice( "Run is commencing" );
 
         this->on_pre_run();
 
@@ -442,7 +443,7 @@ namespace sandfly
         set_status( status::activated );
 
         LINFO( plog, "Run has stopped" );
-        f_msg_relay->slack_notice( "Run has stopped" );
+        f_msg_relay->send_notice( "Run has stopped" );
 
         if( f_do_break_run ) LINFO( plog, "Run was stopped manually" );
         if( is_canceled() ) LINFO( plog, "Run was cancelled" );
