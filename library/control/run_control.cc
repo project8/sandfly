@@ -587,7 +587,7 @@ namespace sandfly
         try
         {
             activate();
-            return a_request->reply( dripline::dl_success(), "DAQ control activated" );
+            return a_request->reply( dripline::dl_success(), "DAQ control activating" );
         }
         catch( error& e )
         {
@@ -600,7 +600,7 @@ namespace sandfly
         try
         {
             reactivate();
-            return a_request->reply( dripline::dl_success(), "DAQ control reactivated" );
+            return a_request->reply( dripline::dl_success(), "DAQ control reactivating" );
         }
         catch( error& e )
         {
@@ -613,7 +613,7 @@ namespace sandfly
         try
         {
             deactivate();
-            return a_request->reply( dripline::dl_success(), "DAQ control deactivated" );
+            return a_request->reply( dripline::dl_success(), "DAQ control deactivating" );
         }
         catch( error& e )
         {
@@ -626,7 +626,7 @@ namespace sandfly
         try
         {
             start_run();
-            return a_request->reply( dripline::dl_success(), "Run started" );
+            return a_request->reply( dripline::dl_success(), "Run starting" );
         }
         catch( std::exception& e )
         {
@@ -640,7 +640,7 @@ namespace sandfly
         try
         {
             stop_run();
-            return a_request->reply( dripline::dl_success(), "Run stopped" );
+            return a_request->reply( dripline::dl_success(), "Run stopping" );
         }
         catch( error& e )
         {
