@@ -41,12 +41,20 @@ namespace sandfly
 
      @details
      The conductor is responsible for coordinating all actions in sandfly.
+
      Control classes managed by the conductor include batch_executor, run_control, request_receiver, and stream_manager.
-     A conductor instance is created by the executable. The executable calls conductor.execute() and waits for it's return.
+     A derived run_control type can be used in place of run_control either by providing the type as a template 
+     argument to conductor.execute(), or by first setting it with conductor.set_rc_creator().
+
+     A conductor instance should be created by the executable. 
+     The executable calls conductor.execute() and waits for it's return.
+     If use of a message_relayer is desired, it should be supplied to conductor.execute().  This argument is optional.
+
      In execute(), conductor creates new instances of run_control, stream_manager and request_receiver.
      It also adds set, get and cmd request handlers by registering handlers with the request_receiver.
      Then it calls run_control.execute and request_receiver.execute in 2 separate threads.
      conductor.execute() only returns when all threads are joined.
+
      */
     class conductor : public scarab::cancelable
     {
@@ -54,8 +62,13 @@ namespace sandfly
             conductor();
             virtual ~conductor();
 
-            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth );
+            /// Start the conductor (using the existing run_control type)
+            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth, std::shared_ptr< message_relayer > a_relayer = nullptr );
+            /// Start the conductor using the provided run_control type
+            template< typename rc_type >
+            void execute( const scarab::param_node& a_config, const scarab::authentication& a_auth, std::shared_ptr< message_relayer > a_relayer = nullptr );
 
+            /// Asynchronous function to tell the conductor to quit
             void quit_server();
 
             int get_return() const;
@@ -104,6 +117,14 @@ namespace sandfly
             std::atomic< status > f_status;
 
     };
+
+    template< typename rc_type >
+    void conductor::execute( const scarab::param_node& a_config, const scarab::authentication& a_auth, std::shared_ptr< message_relayer > a_relayer )
+    {
+        set_rc_creator< rc_type >();
+        execute( a_config, a_auth, a_relayer );
+        return;
+    }
 
     template< typename rc_type >
     void conductor::set_rc_creator()
