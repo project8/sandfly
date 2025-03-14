@@ -49,7 +49,7 @@ namespace sandfly
     {
     }
 
-    void conductor::execute( const param_node& a_config, const scarab::authentication& a_auth )
+    void conductor::execute( const param_node& a_config, const scarab::authentication& a_auth, std::shared_ptr< message_relayer > a_relayer )
     {
         LPROG( plog, "Creating server objects" );
 
@@ -64,25 +64,20 @@ namespace sandfly
         try
         {
             // dripline relayer
-            try
+            if( a_relayer )
             {
-                f_message_relayer.reset( new message_relayer( a_config["dripline"].as_node(), a_auth) );
-                if( a_config["post-to-slack"]().as_bool() )
-                {
-                    f_message_relayer->set_use_relayer( true );
-                    LDEBUG( plog, "Starting message relayer thread" );
-                    t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, f_message_relayer.get() );
-                    f_message_relayer->slack_notice( "Sandfly is starting up" );
-                }
-                else
-                {
-                    LDEBUG( plog, "Message relayer disabled" );
-                }
-                
+                f_message_relayer = a_relayer;
             }
-            catch(...)
+            if( a_config.get_value("use-relayer", false) )
             {
-                LWARN( plog, "Message relayer already exists, and you're trying to create it again" );
+                f_message_relayer->set_use_relayer( true );
+                LDEBUG( plog, "Starting message relayer thread" );
+                t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, f_message_relayer.get() );
+                f_message_relayer->send_notice( "Sandfly is starting up" );
+            }
+            else
+            {
+                LDEBUG( plog, "Message relayer disabled" );
             }
 
             // node manager
@@ -205,7 +200,7 @@ namespace sandfly
     {
         LDEBUG( plog, "Canceling run server with code <" << a_code << ">" );
         f_return = a_code;
-        f_message_relayer->slack_notice( "Sandfly is shutting down" );
+        f_message_relayer->send_notice( "Sandfly is shutting down" );
         f_batch_executor->cancel( a_code );
         f_request_receiver->cancel( a_code );
         f_run_control->cancel( a_code );

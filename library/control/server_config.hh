@@ -25,13 +25,11 @@ namespace sandfly
 
      @details
      Contains default configurations for:
-     - broker
-     - queue
-     - auth-file
-     - slack-queue
+     - dripline_mesh
      - activate-at-startup
      - n-files
      - duration
+     - use-relayer
      - max-file-size-mb
 
      These default configurations, together with the configurations from the command line and the config-file, are passed to scarab::configurator by the sandfly executable.
@@ -44,7 +42,7 @@ namespace sandfly
             virtual ~server_config();
     };
 
-    /// Add basic AMQP options to an app object
+    /// Add basic sandfly options to an app object
     void add_sandfly_options( scarab::main_app& an_app );
 
 } /* namespace sandfly */

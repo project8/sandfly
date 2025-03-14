@@ -9,6 +9,7 @@
 #define SANDFLY_RUN_CONTROL_HH_
 
 #include "control_access.hh"
+#include "message_relayer.hh"
 #include "stream_manager.hh" // for midge_package
 #include "sandfly_error.hh"
 
@@ -24,7 +25,6 @@
 
 namespace sandfly
 {
-    class message_relayer;
     class request_receiver;
 
     /*!
@@ -55,6 +55,11 @@ namespace sandfly
      Settings that can be applied in the "daq" section of the global config:
      - "duration" (integer): the duration of the next run in ms
      - "activate-at-startup" (boolean): whether or not the DAQ control is activated immediately on startup
+
+     Developer notes:
+     - Even though run_control's constructor has a default argument for the message_relayer, if you derive a class from 
+       run_control, the constructor should still have all three arguments.  This allows conductor to propertly create 
+       the specified run control type with all three arguments (even if the relayer isn't being used).
      */
     class run_control : public scarab::cancelable, public control_access
     {
@@ -73,8 +78,8 @@ namespace sandfly
             };
 
         public:
-            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay );
-            virtual ~run_control();
+            run_control( const scarab::param_node& a_config, std::shared_ptr< stream_manager > a_mgr, std::shared_ptr< message_relayer > a_msg_relay = std::make_shared< null_relayer >() );
+            virtual ~run_control() = default;
 
             /// Pre-execution initialization (call after setting the control_access pointer)
             void initialize();
@@ -157,6 +162,8 @@ namespace sandfly
 
             void register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr );
 
+            const message_relayer& relayer() const;
+
         protected:
             void do_cancellation( int a_code );
 
@@ -221,6 +228,11 @@ namespace sandfly
     {
         f_status.store( a_status );
         return;
+    }
+
+    inline const message_relayer& run_control::relayer() const
+    {
+        return *f_msg_relay;
     }
 
 
