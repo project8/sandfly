@@ -31,46 +31,20 @@ namespace sandfly
             message_relayer& operator=( message_relayer&& ) = default;
 
         public:
-            virtual void send_notice( const std::string& a_msg_text ) const = 0;
-            virtual void send_warn( const std::string& a_msg_text ) const = 0;
-            virtual void send_error( const std::string& a_msg_text ) const = 0;
-            virtual void send_critical( const std::string& a_msg_text ) const = 0;
+            void send_notice( const std::string& a_msg_text ) const ;
+            void send_warn( const std::string& a_msg_text ) const ;
+            void send_error( const std::string& a_msg_text ) const ;
+            void send_critical( const std::string& a_msg_text ) const ;
 
-            virtual void send_notice( scarab::param_ptr_t&& a_payload ) const = 0;
-            virtual void send_warn( scarab::param_ptr_t&& a_payload ) const = 0;
-            virtual void send_error( scarab::param_ptr_t&& a_payload ) const = 0;
-            virtual void send_critical( scarab::param_ptr_t&& a_payload ) const = 0;
+            void send_notice( scarab::param_ptr_t&& a_payload ) const ;
+            void send_warn( scarab::param_ptr_t&& a_payload ) const ;
+            void send_error( scarab::param_ptr_t&& a_payload ) const ;
+            void send_critical( scarab::param_ptr_t&& a_payload ) const ;
 
             mv_referrable( std::string, queue_name );
             mv_accessible( bool, use_relayer );
     };
 
-    /**
-     * @class null_relayer
-     * @brief Concrete message_relayer class that does nothing -- no relaying messages, no connecting to a DL broker, etc
-     */
-    class null_relayer : public message_relayer
-    {
-        public:
-            null_relayer();
-            null_relayer( const null_relayer& ) = delete;
-            null_relayer( null_relayer&& ) = default;
-            virtual ~null_relayer() = default;
-
-            null_relayer& operator=( const null_relayer& ) = delete;
-            null_relayer& operator=( null_relayer&& ) = default;
-
-        public:
-            void send_notice( const std::string& ) const override;
-            void send_warn( const std::string& ) const override;
-            void send_error( const std::string& ) const override;
-            void send_critical( const std::string& ) const override;
-
-            void send_notice( scarab::param_ptr_t&& ) const override;
-            void send_warn( scarab::param_ptr_t&& ) const override;
-            void send_error( scarab::param_ptr_t&& ) const override;
-            void send_critical( scarab::param_ptr_t&& ) const override;
-        };
 
 } /* namespace sandfly */
 

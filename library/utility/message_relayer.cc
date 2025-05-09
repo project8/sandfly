@@ -24,46 +24,43 @@ namespace sandfly
     {}
 
     
-    null_relayer::null_relayer() :
-            message_relayer( param_node( "dripline_mesh"_a=param_node("make_connection"_a=false) ), scarab::authentication() )
-    {}
 
-    void null_relayer::send_notice( const std::string& a_msg_text ) const
+    void message_relayer::send_notice( const std::string& a_msg_text ) const
     {
         return;
     }
 
-    void null_relayer::send_warn( const std::string& a_msg_text ) const
+    void message_relayer::send_warn( const std::string& a_msg_text ) const
     {
         return;
     }
 
-    void null_relayer::send_error( const std::string& a_msg_text ) const
+    void message_relayer::send_error( const std::string& a_msg_text ) const
     {
         return;
     }
 
-    void null_relayer::send_critical( const std::string& a_msg_text ) const
+    void message_relayer::send_critical( const std::string& a_msg_text ) const
     {
         return;
     }
 
-    void null_relayer::send_notice( scarab::param_ptr_t&& a_payload ) const
+    void message_relayer::send_notice( scarab::param_ptr_t&& a_payload ) const
     {
         return;
     }
 
-    void null_relayer::send_warn( scarab::param_ptr_t&& a_payload ) const
+    void message_relayer::send_warn( scarab::param_ptr_t&& a_payload ) const
     {
         return;
     }
 
-    void null_relayer::send_error( scarab::param_ptr_t&& a_payload ) const
+    void message_relayer::send_error( scarab::param_ptr_t&& a_payload ) const
     {
         return;
     }
 
-    void null_relayer::send_critical( scarab::param_ptr_t&& a_payload ) const
+    void message_relayer::send_critical( scarab::param_ptr_t&& a_payload ) const
     {
         return;
     }

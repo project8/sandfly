@@ -63,17 +63,11 @@ namespace sandfly
         std::thread t_msg_relay_thread;
         try
         {
-            // dripline relayer
-            if( a_relayer )
-            {
-                f_message_relayer = a_relayer;
-            }
             if( a_config.get_value("use-relayer", false) )
             {
-                f_message_relayer->set_use_relayer( true );
+                //f_message_relayer->set_use_relayer( true );
                 LDEBUG( plog, "Starting message relayer thread" );
-                t_msg_relay_thread = std::thread( &message_relayer::execute_relayer, f_message_relayer.get() );
-                f_message_relayer->send_notice( "Sandfly is starting up" );
+                f_message_relayer = std::make_shared<message_relayer> (a_config,a_auth);
             }
             else
             {

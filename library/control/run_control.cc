@@ -374,7 +374,7 @@ namespace sandfly
         // a_duration is in ms
 
         LINFO( plog, "Run is commencing" );
-        f_msg_relay->send_notice( "Run is commencing" );
+	//f_msg_relay->send_notice( "Run is commencing" );
 
         this->on_pre_run();
 
@@ -438,7 +438,7 @@ namespace sandfly
         set_status( status::activated );
 
         LINFO( plog, "Run has stopped" );
-        f_msg_relay->send_notice( "Run has stopped" );
+	//f_msg_relay->send_notice( "Run has stopped" );
 
         if( f_do_break_run ) 
         {
