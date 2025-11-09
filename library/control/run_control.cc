@@ -382,8 +382,8 @@ namespace sandfly
         typedef std::chrono::steady_clock::time_point time_point_t;
 
         duration_t t_run_duration = std::chrono::duration_cast< duration_t >( std::chrono::milliseconds(a_duration) ); // a_duration converted from ms to duration_t
-        duration_t t_sub_duration = std::chrono::duration_cast< duration_t >( std::chrono::milliseconds(500) ); // 500 ms sub-duration converted to duration_t
-        LINFO( plog, "Run duration will be " << a_duration << " ms;  sub-durations of 500 ms will be used" );
+        duration_t t_sub_duration = std::chrono::duration_cast< duration_t >( std::chrono::milliseconds(100) ); // 100 ms sub-duration converted to duration_t
+        LPROG( plog, "Run duration will be " << a_duration << " ms;  sub-durations of 100 ms will be used" );
         LDEBUG( plog, "In units of steady_clock::duration: run duration is " << t_run_duration.count() << " and sub_duration is " << t_sub_duration.count() );
 
         std::unique_lock< std::mutex > t_run_stop_lock( f_run_stop_mutex );
@@ -419,12 +419,15 @@ namespace sandfly
             //   - run_control has been canceled
 
             time_point_t t_run_start = std::chrono::steady_clock::now();
-            time_point_t t_run_end = t_run_start + t_run_duration;
+            //time_point_t t_run_end = t_run_start + t_run_duration ;
+            time_point_t t_run_end = t_run_start + t_run_duration + t_sub_duration;
+	    //overdigitizer for t_sub_duration
 
             while( std::chrono::steady_clock::now() < t_run_end && ! f_do_break_run && ! is_canceled() )
             {
                 // we use wait_until so that we can break the run up with subdurations and not worry about whether a subduration was interrupted by a spurious wakeup
                 f_run_stopper.wait_until( t_run_stop_lock, std::min( std::chrono::steady_clock::now() + t_sub_duration, t_run_end ) );
+		//f_run_stopper.wait_for( t_run_stop_lock, t_run_duration);
             }
 
         }
