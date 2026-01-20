@@ -23,10 +23,6 @@ ENV PATH="${PATH}:${SANDFLY_INSTALL_PREFIX}"
 # Build image with dev dependencies
 FROM base AS deps
 
-# use quill_checkout to specify a tag or branch name to checkout
-ARG quill_checkout=v7.3.0
-ENV QUILL_CHECKOUT=${quill_checkout}
-
 RUN apt-get update &&\
     DEBIAN_FRONTEND=noninteractive apt-get install -y \
         build-essential \
@@ -45,15 +41,6 @@ RUN apt-get update &&\
     apt-get clean &&\
     rm -rf /var/lib/apt/lists/* &&\
     cd /usr/local && \
-    git clone https://github.com/odygrd/quill.git && \
-    cd quill && \
-    git checkout ${QUILL_CHECKOUT} && \
-    mkdir build && \
-    cd build && \
-    cmake .. && \
-    make -j${narg} install && \
-    cd / && \
-    rm -rf /usr/local/quill &&\
     /bin/true
 
 # Build psyllid in the deps image
