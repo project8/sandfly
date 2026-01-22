@@ -43,7 +43,7 @@ int main( int argc, char** argv )
 
         // The main execution callback
         the_main.callback( [&](){ 
-                scarab::signal_handler t_sig_hand;
+                scarab::signal_handler t_sig_hand( true );
                 auto t_cwrap = scarab::wrap_cancelable( the_conductor );
                 t_sig_hand.add_cancelable( t_cwrap );
 
