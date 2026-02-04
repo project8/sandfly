@@ -26,11 +26,12 @@ namespace sandfly
      @details
      Contains default configurations for:
      - dripline_mesh
-     - activate-at-startup
-     - n-files
-     - duration
-     - use-relayer
+     - daq.activate-at-startup
+     - daq.n-files
+     - daq.duration
      - max-file-size-mb
+     - control.use-relayer
+     - control.subrun-duration-ms
 
      These default configurations, together with the configurations from the command line and the config-file, are passed to scarab::configurator by the sandfly executable.
      The configurator combines them and extracts the final sandfly configuration which is then passed to the run_server during initialization.
