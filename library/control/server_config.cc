@@ -37,14 +37,17 @@ namespace sandfly
 
         add( "name", "sandfly" );
 
-        add( "use-relayer", false );
-
         param_node t_daq_node;
         t_daq_node.add( "activate-at-startup", false );
         t_daq_node.add( "n-files", 1U );
         t_daq_node.add( "duration", 1000U );
         t_daq_node.add( "max-file-size-mb", 500.0 );
         add( "daq", t_daq_node );
+
+        param_node t_control_node;
+        t_control_node.add( "use-relayer", false );
+        t_control_node.add( "subrun-duration-ms", 500U );
+        add( "control", t_control_node );
 
         param_node t_batch_commands;
         param_array t_stop_array;
@@ -94,7 +97,7 @@ namespace sandfly
     {
         dripline::add_dripline_options( an_app );
 
-        an_app.add_config_flag< bool >( "--use-relayer", "use-relayer", "Flag for en/disabling the use of the message relayer" );
+        an_app.add_config_flag< bool >( "--use-relayer", "control.use-relayer", "Flag for en/disabling the use of the message relayer" );
         an_app.add_config_flag< bool >( "--activate-at-startup", "daq.activate-at-startup", "Flag to make Psyllid activate on startup" );
         an_app.add_config_option< unsigned >( "-n,--n-files", "daq.n-files", "Number of files to be written in parallel" );
         an_app.add_config_option< unsigned >( "-d,--duration", "daq.duration", "Run duration in ms" );

@@ -20,7 +20,7 @@ namespace sandfly
     message_relayer::message_relayer( const param_node& a_config, const scarab::authentication& a_auth ) :
             dripline::relayer( a_config, a_auth ),
             f_queue_name( a_config.get_value( "queue", "sandfly" ) ),
-            f_use_relayer( a_config.get_value( "use-relayer", false ) )
+            f_use_relayer( a_config["control"].get_value( "use-relayer", false ) )
     {}
 
     

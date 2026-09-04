@@ -162,7 +162,7 @@ namespace sandfly
 
             void register_handlers( std::shared_ptr< request_receiver > a_receiver_ptr );
 
-            const message_relayer& relayer() const;
+            std::shared_ptr< message_relayer > relayer() const;
 
         protected:
             void do_cancellation( int a_code );
@@ -191,6 +191,7 @@ namespace sandfly
 
         public:
             mv_accessible( unsigned, run_duration );
+            mv_accessible( unsigned, subrun_duration );
 
         public:
             enum class status:uint32_t
@@ -230,9 +231,9 @@ namespace sandfly
         return;
     }
 
-    inline const message_relayer& run_control::relayer() const
+    inline std::shared_ptr< message_relayer > run_control::relayer() const
     {
-        return *f_msg_relay;
+        return f_msg_relay;
     }
 
 
