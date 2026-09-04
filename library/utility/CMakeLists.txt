@@ -4,6 +4,7 @@
 
 include_directories( BEFORE
     ${PROJECT_SOURCE_DIR}/library/utility
+    ${PROJECT_SOURCE_DIR}/library/testing
 )
 
 set( headers
@@ -12,6 +13,10 @@ set( headers
     sandfly_return_codes.hh
     sandfly_error.hh
     sandfly_version.hh
+)
+
+set( testing_headers
+    sandfly_test_binding.hh
 )
 set( sources
     message_relayer.cc
@@ -36,4 +41,5 @@ pbuilder_library(
 )
 
 pbuilder_install_headers( ${headers} )
+pbuilder_install_headers( ${testing_headers} )
 
