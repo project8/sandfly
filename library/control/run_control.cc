@@ -53,6 +53,7 @@ namespace sandfly
             f_run_return(),
             f_msg_relay( a_msg_relay ),
             f_run_duration( 1000 ),
+            f_subrun_duration( 500 ),
             f_status( status::deactivated )
     {
         // DAQ config is optional; defaults will work just fine
@@ -62,6 +63,7 @@ namespace sandfly
         }
 
         set_run_duration( f_daq_config.get_value( "duration", get_run_duration() ) );
+        set_subrun_duration( a_config["control"].get_value( "subrun-duration-ms", get_subrun_duration() ) );
     }
 
     void run_control::initialize()
