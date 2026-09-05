@@ -68,7 +68,7 @@ namespace sandfly
             {
                 f_message_relayer = a_relayer;
             }
-            if( a_config.get_value("use-relayer", false) )
+            if( a_config["control"].get_value("use-relayer", false) )
             {
                 f_message_relayer->set_use_relayer( true );
                 LDEBUG( plog, "Starting message relayer thread" );
